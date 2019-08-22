@@ -10,7 +10,7 @@
                 <el-button type="primary" @click="delAll"><i class="el-icon-close marginright"></i>批量删除</el-button>
             </div>
         </div>
-        <div v-loading="loading">
+        <div > <!-- v-loading="loading" -->
             <div class="handle-box">
                 <el-input v-model="select_word" placeholder="筛选关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" @click="search"><i class="icon iconfont icon-sousuo marginright"></i>搜索</el-button>
@@ -85,11 +85,10 @@
     
 <script>
 
-import fetch from '../common/utils/common.js'
+import {fetchData} from '../../api/FetchData';
 
 export default {
-    
-    name: "menu",
+    name: "sysmenu",
     data() {
         return {
             loading: true,
@@ -115,23 +114,24 @@ export default {
     computed: {
         // 搜索
         data() {
-            return this.tableData.filter(data => {
-                let is_del = false;
-                for (let i = 0; i < this.del_list.length; i++) {
-                    if (d.name === this.del_list[i].name) {
-                        is_del = true;
-                        break;
-                    }
-                }
-                if (!is_del) {
-                    if (
-                        data.name.indexOf(this.select_word) > -1 ||
-                        data.parentName.indexOf(this.select_word) > -1
-                    ) {
-                        return data;
-                    }
-                }
-            });
+            return [{a:'a'}];
+            // return this.tableData.filter(data => {
+            //     let is_del = false;
+            //     for (let i = 0; i < this.del_list.length; i++) {
+            //         if (d.name === this.del_list[i].name) {
+            //             is_del = true;
+            //             break;
+            //         }
+            //     }
+            //     if (!is_del) {
+            //         if (
+            //             data.name.indexOf(this.select_word) > -1 ||
+            //             data.parentName.indexOf(this.select_word) > -1
+            //         ) {
+            //             return data;
+            //         }
+            //     }
+            // });
         }
     },
     methods: {
@@ -160,9 +160,9 @@ export default {
         },
         //获取数据
         getData() {
-            let url = "/sysMenu/menus/list";
-            fetch(url).then(res => {
-                this.tableData = res.data;
+            let url = "/sysMenu/menuForTree";
+            fetchData(url,'get').then(res => {
+                this.tableData = res.data ? res.data : [{a:'a'}];
                 this.loading = false;
             });
         },
@@ -189,12 +189,9 @@ export default {
             this.dialogVisible = true;
         },
         handleSelectionChange(val) {
-            if (this.flag) {
-                this.multipleSelection = val;
-            }
+            if (this.flag) {this.multipleSelection = val;}
         },
-        // 保存
-        saveForm() {
+        saveForm() { // 保存
             var param = this.formData;
             param.parentId = param.parentId ? param.parentId : "0";
             //outsideUrl=true则设置为0，=false则设置为1
@@ -203,8 +200,8 @@ export default {
             } else {
                 param.outsideUrl = 1;
             }
-            let url = "/management/menu/add";
-            this.$post(url, param).then(res => {
+            let url = "/sysMenu/save";
+            fetchData(url,'post',param).then(res => {
                 this.dialogVisible = false;
                 this.$message.success(`操作成功!!`);
                 this.getData();
@@ -222,8 +219,8 @@ export default {
                 type: "warning"
             })
             .then(() => {
-                let url = "management/menus/delete/" + rowId;
-                this.$post(url, {}).then(res => {
+                let url = "/sysMenu/delete/" + rowId;
+                fetchData(url,'post').then(res => {
                     this.$message.success("操作成功!!");
                     this.getData();
                 });
@@ -235,10 +232,7 @@ export default {
         //删除选中的所有
         delAll() {
             const length = this.multipleSelection.length;
-            if (length == 0) {
-                this.$message.warning("请至少选择一行记录!!");
-                return;
-            }
+            if (length == 0) {this.$message.warning("请至少选择一行记录!!");return;}
             let ids = "";
             for (let i = 0; i < length; i++) {
                 if (this.multipleSelection[i].id > 1) {
@@ -246,22 +240,20 @@ export default {
                 }
             }
             ids = ids.substring(0, ids.length - 1);
-            let url = "management/menus/delete/" + ids;
+            let url = "/sysMenu/delete/" + ids;
             this.$confirm("删除后将不可恢复，是否确认？", "提示", {
                 confirmButtonText: "确定",
                 cancelButtonText: "取消",
                 type: "warning"
             })
-                .then(() => {
-                    this.$post(url, {}).then(res => {
-                        this.$message.success("操作成功!!");
-                        this.multipleSelection = [];
-                        this.getData();
-                    });
-                })
-                .catch(() => {
-                    this.$message.info("已取消删除");
+            .then(() => {
+                fetchData(url,'post').then(res => {
+                    this.$message.success("操作成功!!");
+                    this.multipleSelection = [];
+                    this.getData();
                 });
+            })
+            .catch(() => { this.$message.info("已取消删除");});
         }
     }
 };
