@@ -50,7 +50,6 @@
 
 import filterRadio from "../../common/filter/filter-radio.vue";
 import filterCard from "../../common/filter/filter-card.vue";
-//import echartsLine from "../../common/dashboard/echarts-line.vue";
 import uiTable from "../../common/table/table.vue";
 import Schart from 'vue-schart';
 export default {
