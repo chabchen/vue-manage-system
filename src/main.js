@@ -12,7 +12,6 @@ import 'babel-polyfill';
 
 
 
-
 Vue.config.productionTip = false;
 Vue.use(VueI18n);
 Vue.use(ElementUI, {
@@ -53,4 +52,10 @@ new Vue({
 
 
 
-
+import {
+    post,
+    fetch,
+    patch,
+    put,
+    postSimple
+} from './components/common/utils/common.js'
