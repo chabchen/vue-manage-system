@@ -114,24 +114,23 @@ export default {
     computed: {
         // 搜索
         data() {
-            return [{a:'a'}];
-            // return this.tableData.filter(data => {
-            //     let is_del = false;
-            //     for (let i = 0; i < this.del_list.length; i++) {
-            //         if (d.name === this.del_list[i].name) {
-            //             is_del = true;
-            //             break;
-            //         }
-            //     }
-            //     if (!is_del) {
-            //         if (
-            //             data.name.indexOf(this.select_word) > -1 ||
-            //             data.parentName.indexOf(this.select_word) > -1
-            //         ) {
-            //             return data;
-            //         }
-            //     }
-            // });
+            return this.tableData.filter(data => {
+                let is_del = false;
+                for (let i = 0; i < this.del_list.length; i++) {
+                    if (d.name === this.del_list[i].name) {
+                        is_del = true;
+                        break;
+                    }
+                }
+                if (!is_del) {
+                    if (
+                        data.name.indexOf(this.select_word) > -1 ||
+                        data.parentName.indexOf(this.select_word) > -1
+                    ) {
+                        return data;
+                    }
+                }
+            });
         }
     },
     methods: {
@@ -160,9 +159,8 @@ export default {
         },
         //获取数据
         getData() {
-            let url = "/sysMenu/menuForTree";
-            fetchData(url,'get').then(res => {
-                this.tableData = res.data ? res.data : [{a:'a'}];
+            fetchData('/sysMenu/menuForTree','get').then(res => {
+                this.tableData = res.datas ? res.datas : [];
                 this.loading = false;
             });
         },
@@ -200,8 +198,7 @@ export default {
             } else {
                 param.outsideUrl = 1;
             }
-            let url = "/sysMenu/save";
-            fetchData(url,'post',param).then(res => {
+            fetchData('/sysMenu/save','post',param).then(res => {
                 this.dialogVisible = false;
                 this.$message.success(`操作成功!!`);
                 this.getData();
