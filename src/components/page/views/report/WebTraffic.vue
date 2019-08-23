@@ -3,41 +3,20 @@
         <div style="text-align: left">
             <filterRadio/>
         </div>
-        <div>
+        <div  v-for="item in data1">
             <div class="card">
                 <filterCard/>
             </div>
+        </div>  
+        <div  v-for="item in data1">
             <div class="card">
                 <filterCard/>
             </div>
-            <div class="card">
-                <filterCard/>
-            </div>
-            <div class="card">
-                <filterCard/>
-            </div>
-            <div class="card">
-                <filterCard/>
-            </div>
-            <div class="card">
-                <filterCard/>
-            </div>
-            <div class="card">
-                <filterCard/>
-            </div>
-            <div class="card">
-                <filterCard/>
-            </div>
-            <div class="card">
-                <filterCard/>
-            </div>
-            <div class="card">
-                <filterCard/>
-            </div>
-        </div>   
+        </div>  
+
         <div class="container" style="width: 100%;height: 30%;">
             <div class="schart-box">
-                <schart class="schart" canvasId="line" :data="data1" type="line" :options="options2"></schart>
+                <schart class="schart" canvasId="line" :data="data1" type="'bar'" :options="options2"></schart>
             </div>
         </div>
         <div>
@@ -66,6 +45,7 @@ export default {
                 {name:'2017',value:1450}
             ],
             options2: {
+                type:['line', 'bar'],
                 title: '趋势图',
                 //bgColor: '#D5E4EB',
                 titleColor: '#00887C',

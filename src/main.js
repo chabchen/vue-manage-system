@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import App from './App.vue';
 import router from './router';
+import VCharts from 'v-charts';
 import ElementUI from 'element-ui';
 import VueI18n from 'vue-i18n';
 import { messages } from './components/common/i18n';
@@ -13,14 +14,11 @@ import 'babel-polyfill';
 
 
 Vue.config.productionTip = false;
+
 Vue.use(VueI18n);
-Vue.use(ElementUI, {
-    size: 'small'
-});
-const i18n = new VueI18n({
-    locale: 'zh',
-    messages
-});
+Vue.use(ElementUI, {size: 'small'});
+Vue.use(VCharts);
+const i18n = new VueI18n({locale: 'zh',messages});
 
 //使用钩子函数对路由进行权限跳转
 router.beforeEach((to, from, next) => {
@@ -43,19 +41,4 @@ router.beforeEach((to, from, next) => {
     }
 });
 
-new Vue({
-    router,
-    i18n,
-    render: h => h(App)
-}).$mount('#app');
-
-
-
-
-import {
-    post,
-    fetch,
-    patch,
-    put,
-    postSimple
-} from './components/common/utils/common.js'
+export const VueObj = new Vue({router,render: h => h(App)}).$mount('#app');

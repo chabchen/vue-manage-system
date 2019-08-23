@@ -10,13 +10,13 @@
                 <el-button type="primary" @click="delAll"><i class="el-icon-close marginright"></i>批量删除</el-button>
             </div>
         </div>
-        <div > <!-- v-loading="loading" -->
+        <div v-loading="loading">
             <div class="handle-box">
                 <el-input v-model="select_word" placeholder="筛选关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" @click="search"><i class="icon iconfont icon-sousuo marginright"></i>搜索</el-button>
             </div>
             <el-table stripe border height="650" :row-class-name="handleSelectedBg" @row-click="rowclick" 
-                :data="data.slice((currentPage-1)*pagesize,currentPage*pagesize)" 
+                :data="data" 
                 ref="multipleTable" @selection-change="handleSelectionChange" 
                 :default-sort="{prop: 'date', order: 'descending'}">
                 <el-table-column type="selection" width="55"></el-table-column>
@@ -41,7 +41,7 @@
                 </el-table-column>
             </el-table>
             <div class="pagination">
-                <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[10, 20, 30, 40]" :page-size="10" layout="total, sizes, prev, pager, next, jumper" :total="tableData.length">
+                <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[10, 20, 30, 40]" :page-size="10" layout="total, sizes, prev, pager, next, jumper" :total="total">
                 </el-pagination>
             </div>
         </div>
@@ -62,7 +62,7 @@
                     <el-input v-model="formData.description"></el-input>
                 </el-form-item>
                 <el-form-item label="类型">
-                    <el-input disabled v-model="formData.type"></el-input>
+                    <el-input v-model="formData.type"></el-input>
                 </el-form-item>
                 <el-form-item label="链接">
                     <el-input v-model="formData.url"></el-input>
@@ -93,6 +93,7 @@ export default {
         return {
             loading: true,
             pagesize: "10",
+            total:0,
             tableData: [],
             currentPage: 1,
             multipleSelection: [],
@@ -125,7 +126,7 @@ export default {
                 if (!is_del) {
                     if (
                         data.name.indexOf(this.select_word) > -1 ||
-                        data.parentName.indexOf(this.select_word) > -1
+                        data.description.indexOf(this.select_word) > -1
                     ) {
                         return data;
                     }
@@ -159,8 +160,13 @@ export default {
         },
         //获取数据
         getData() {
-            fetchData('/sysMenu/menuForTree','get').then(res => {
-                this.tableData = res.datas ? res.datas : [];
+            this.loading = true;
+            fetchData('/sysMenu/menuForTree','get',{'type':'all','currentPage':this.currentPage}).then(res => {
+                this.tableData = [];
+                if(res.datas && res.datas.list.length){
+                    this.tableData = res.datas.list;
+                    this.total = res.datas.total;
+                }              
                 this.loading = false;
             });
         },
@@ -175,7 +181,7 @@ export default {
                     description: row.description,
                     type: row.type,
                     url: row.url,
-                    outsideUrl: row.outsideUrl == 1 ? false : true,
+                    outsideUrl: row.outsideUrl == 'true' ? true : false,
                     icon: row.icon,
                     orderNo: row.orderNo
                 };
@@ -192,12 +198,6 @@ export default {
         saveForm() { // 保存
             var param = this.formData;
             param.parentId = param.parentId ? param.parentId : "0";
-            //outsideUrl=true则设置为0，=false则设置为1
-            if (param.outsideUrl) {
-                param.outsideUrl = 0;
-            } else {
-                param.outsideUrl = 1;
-            }
             fetchData('/sysMenu/save','post',param).then(res => {
                 this.dialogVisible = false;
                 this.$message.success(`操作成功!!`);
