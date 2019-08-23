@@ -14,7 +14,6 @@ height="500px"
 export default {
     data () {
     this.chartSettings = {
-        yAxisType:'KMB',
         yAxisName:'头',
         showLine: ['下单用户','下单率']
     }

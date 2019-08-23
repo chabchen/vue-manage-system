@@ -7,6 +7,8 @@
 import asyncLoadComp from './asyncLoadComp.vue'
     export default {
     components: {asyncLoadComp},
-    data () {return {comps: ['filter/filter-radio','filter/filter-card','filter/filter-card', 'echarts/LineBar'],prop: {name: '张三'}}}
+    data () {return {
+        comps: ['filter/filter-radio','filter/filter-card','filter/filter-card', 'echarts/LineBar','echarts/Line'],
+        prop: {name: '张三'}}}
 }
 </script>
