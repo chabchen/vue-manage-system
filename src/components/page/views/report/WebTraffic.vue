@@ -16,7 +16,7 @@
 
         <div class="container" style="width: 100%;height: 30%;">
             <div class="schart-box">
-                <schart class="schart" canvasId="line" :data="data1" type="'bar'" :options="options2"></schart>
+                <schart class="schart" canvasId="line" :data="data1" :type="'options2.type'" :options="options2"></schart>
             </div>
         </div>
         <div>
@@ -29,7 +29,7 @@
 
 import filterRadio from "../../common/filter/filter-radio.vue";
 import filterCard from "../../common/filter/filter-card.vue";
-import uiTable from "../../common/table/table.vue";
+import uiTable from "../../common/table/Table.vue";
 import Schart from 'vue-schart';
 export default {
     components: {
@@ -45,7 +45,7 @@ export default {
                 {name:'2017',value:1450}
             ],
             options2: {
-                type:['line', 'bar'],
+                type: 'bar',
                 title: '趋势图',
                 //bgColor: '#D5E4EB',
                 titleColor: '#00887C',

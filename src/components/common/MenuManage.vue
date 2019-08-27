@@ -13,7 +13,6 @@
         <div v-loading="loading">
             <div class="handle-box">
                 <el-input v-model="select_word" placeholder="筛选关键词" class="handle-input mr10"></el-input>
-                <el-button type="primary" @click="search"><i class="icon iconfont icon-sousuo marginright"></i>搜索</el-button>
             </div>
             <el-table stripe border height="650" :row-class-name="handleSelectedBg" @row-click="rowclick" 
                 :data="data" 
@@ -85,7 +84,7 @@
     
 <script>
 
-import {fetchData} from '../../api/FetchData';
+import {requestData} from '../../api/RequestData';
 
 export default {
     name: "sysmenu",
@@ -161,7 +160,7 @@ export default {
         //获取数据
         getData() {
             this.loading = true;
-            fetchData('/sysMenu/menuForTree','get',{'type':'all','currentPage':this.currentPage}).then(res => {
+            requestData('/sysMenu/menuForTree','get',{'type':'all','currentPage':this.currentPage}).then(res => {
                 this.tableData = [];
                 if(res.datas && res.datas.list.length){
                     this.tableData = res.datas.list;
@@ -170,7 +169,6 @@ export default {
                 this.loading = false;
             });
         },
-        search() {},
         //编辑当前行数据
         openForm(index, row) {
             if (row) {
@@ -198,7 +196,7 @@ export default {
         saveForm() { // 保存
             var param = this.formData;
             param.parentId = param.parentId ? param.parentId : "0";
-            fetchData('/sysMenu/save','post',param).then(res => {
+            requestData('/sysMenu/save','post',param).then(res => {
                 this.dialogVisible = false;
                 this.$message.success(`操作成功!!`);
                 this.getData();
@@ -217,7 +215,7 @@ export default {
             })
             .then(() => {
                 let url = "/sysMenu/delete/" + rowId;
-                fetchData(url,'post').then(res => {
+                requestData(url,'post').then(res => {
                     this.$message.success("操作成功!!");
                     this.getData();
                 });
@@ -244,7 +242,7 @@ export default {
                 type: "warning"
             })
             .then(() => {
-                fetchData(url,'post').then(res => {
+                requestData(url,'post').then(res => {
                     this.$message.success("操作成功!!");
                     this.multipleSelection = [];
                     this.getData();

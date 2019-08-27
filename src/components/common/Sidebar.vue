@@ -51,7 +51,7 @@
 
 <script>
 import bus from "../common/bus";
-import {fetchData} from '../../api/FetchData';
+import {requestData} from '../../api/RequestData';
 export default {
     data() {
         return {
@@ -115,7 +115,7 @@ export default {
             // if (window.config.active == "dev") {
             //     url = "/sysMenu/menuForTree";
             // }
-            fetchData('/sysMenu/menuForTree','get').then(res => {
+            requestData('/sysMenu/menuForTree','get').then(res => {
                 this.items = res.datas ? res.datas : [];
                // localStorage.setItem("sidebarData", JSON.stringify(this.items));
             });

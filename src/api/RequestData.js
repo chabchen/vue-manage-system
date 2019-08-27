@@ -1,7 +1,7 @@
 import request from '../utils/request';
 
-export const fetchData = (url,method,query) => {
-    if(query){
+export const requestData = (url,method,query) => {
+    if('get' == method && query){
         url += "?";
         for(let field in query){
             url += "&"+field + "=" + query[field];

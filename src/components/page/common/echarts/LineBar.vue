@@ -14,7 +14,7 @@ height="500px"
 export default {
     data () {
     this.chartSettings = {
-        yAxisName:'头',
+        //yAxisName:'头',
         showLine: ['下单用户','下单率']
     }
     return {

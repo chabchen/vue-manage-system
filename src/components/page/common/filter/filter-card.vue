@@ -48,18 +48,14 @@
 
 <script>
 export default {
-    components: {
-     
-    },
+    props: {prop: Object},
     data() {
       return { checked: false}
     },
-    mounted() {
-      
-    },
     methods: {},
-    watch: {},
-    created() {}
+    created() {
+        console.log(this.prop.name);
+    }
   }
 </script>
 

@@ -27,15 +27,26 @@ var routes = [{
             component: resolve => require(['../components/page/common/filter/filter-card.vue'], resolve),
         },
         {
-            path: '/menu',
-            component: resolve => require(['../components/common/Menu.vue'], resolve),
+            path: '/menuManage',
+            component: resolve => require(['../components/common/MenuManage.vue'], resolve),
             meta: { title: '菜单管理', permission: true }
+        },
+        {
+            path: '/reportManage',
+            component: resolve => require(['../components/common/ReportManage.vue'], resolve),
+            meta: { title: '报表配置管理', permission: true }
         },
         {
             path: '/icon',
             component: () => import( '../components/page/Icon.vue'),
             meta: { title: '自定义图标' }
         },
+        {
+            path: '/table1',
+            component: () => import( '../components/page/common/table/Table.vue'),
+            meta: { title: '基础表格' }
+        },
+
         {
             path: '/table',
             component: () => import( '../components/page/BaseTable.vue'),
@@ -108,11 +119,6 @@ var routes = [{
             path: '/403',
             component: () => import( '../components/page/403.vue'),
             meta: { title: '403' }
-        },
-        {
-            path: '/donate',
-            component: () => import( '../components/page/Donate.vue'),
-            meta: { title: '支持作者' }
         }
     ]
 },
@@ -129,7 +135,7 @@ var routes = [{
 loadRouter();
 
 import {VueObj} from '../main.js'
-import {fetchData} from '../api/FetchData';
+import {requestData} from '../api/RequestData';
 
 function loadRouter() {
     // var menusList = sessionStorage.getItem("menusList");
@@ -137,7 +143,7 @@ function loadRouter() {
     //   addRouter(JSON.parse(menusList));
     // }
   
-    fetchData('/sysMenu/menuForTree','get').then(res => {
+    requestData('/sysMenu/menuForTree','get').then(res => {
       let routerData = res.datas ? res.datas : [];;
       //sessionStorage.setItem("menusList", JSON.stringify(routerData));
       addRouter(routerData);
