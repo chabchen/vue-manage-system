@@ -19,13 +19,14 @@
                 ref="multipleTable" @selection-change="handleSelectionChange" 
                 :default-sort="{prop: 'date', order: 'descending'}">
                 <el-table-column type="selection" width="55"></el-table-column>
-                <el-table-column prop="name" label="名称" sortable width="150">
+                <el-table-column prop="name" label="报表名称" sortable>
+                    <template slot-scope="scope">
+                        <a @click="openDetailedPage(scope.row)" style="color:#3cabf4;cursor:pointer;">{{scope.row.name}}</a>
+                    </template>
                 </el-table-column>
                 <el-table-column prop="reportId" label="文件路径" >
                 </el-table-column>
                 <el-table-column prop="type" label="类型" sortable>
-                </el-table-column>
-                <el-table-column prop="config" label="配置信息" sortable>
                 </el-table-column>
                 <el-table-column label="操作" width="200">
                     <template slot-scope="scope">
@@ -52,9 +53,6 @@
                 </el-form-item>
                 <el-form-item label="类型">
                     <el-input v-model="formData.type"></el-input>
-                </el-form-item>
-                <el-form-item label="配置信息">
-                    <el-input type="textarea" rows="12" v-model="formData.config"></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -119,6 +117,9 @@ export default {
             this.$refs.multipleTable.clearSelection();
             this.flag = true;
             this.$refs.multipleTable.toggleRowSelection(row);
+        },
+        openDetailedPage(row){
+            this.$router.push({path:'index', query:{reportId:row.reportId}}) 
         },
         // 改变颜色
         handleSelectedBg({ row, rowIndex }) {

@@ -1,28 +1,24 @@
 <template>
-    <el-radio-group v-model="tabPosition" style="margin-bottom: 30px;">
-        <el-radio-button label="day">日报</el-radio-button>
-        <el-radio-button label="month">月报</el-radio-button>
-        <el-radio-button label="year">年报</el-radio-button>
+    <el-radio-group class="radio-group" v-model="radioData.value">
+        <el-radio-button v-for="item in radioData.items" :key="item.index" :label="item.label"/>
     </el-radio-group>
 </template>
 
 <script>
 export default {
-    components: {
-    },
+    props: { prop: Object },
     data() {
         return {
-            tabPosition: 'day'
-        }
+            radioData:{}
+        }    
     },
-    mounted() {
-        
-    },
-    methods: {},
-    watch: {},
-    created() {}
+    created() {
+        this.radioData = this.prop.config.radioData;
     }
+}
 </script>
 <style scoped>
-
+.radio-group{
+    margin-bottom: 30px;
+}
 </style>

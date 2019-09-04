@@ -12,22 +12,20 @@
         </div>
     </div>
 </template>
-
 <script>
+
+import {requestData} from '@/api/RequestData';
+
 export default {
+    props: {prop: Object},
     data() {
-    return {
-        items: [{'key':'重点产品折前收入','value':'111'},
-                {'key':'重点产品达成','value':'222'},
-                {'key':'新品折前收入','value':'333'},
-                {'key':'新品销售贡献','value':'444'}
-        ]
-    }
+        return {
+            items:[]
+        }
     },
-    mounted() {},
-    methods: {},
-    watch: {},
-    created() {}
+    created() {
+        this.items = this.prop.config.items;
+    }
 }
 </script>
 

@@ -12,7 +12,6 @@ import './components/common/directives';
 import 'babel-polyfill';
 
 
-
 Vue.config.productionTip = false;
 
 Vue.use(VueI18n);

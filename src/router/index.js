@@ -21,7 +21,11 @@ var routes = [{
             component: () => import( '../components/page/common/index.vue'),
             meta: { title: '测试' }
         },
-
+        {
+            path: '/index1',
+            component: () => import( '../components/page/common/index1.vue'),
+            meta: { title: '测试' }
+        },
         {
             path: '/filterCard',
             component: resolve => require(['../components/page/common/filter/filter-card.vue'], resolve),
@@ -37,6 +41,12 @@ var routes = [{
             meta: { title: '报表配置管理', permission: true }
         },
         {
+            path: '/reportDetailManage',
+            component: resolve => require(['../components/common/ReportDetailManage.vue'], resolve),
+            meta: { title: '报表配置管理', permission: true }
+        },
+        
+        {
             path: '/icon',
             component: () => import( '../components/page/Icon.vue'),
             meta: { title: '自定义图标' }
@@ -46,7 +56,16 @@ var routes = [{
             component: () => import( '../components/page/common/table/Table.vue'),
             meta: { title: '基础表格' }
         },
-
+        {
+            path: '/tableGrid',
+            component: () => import( '../components/page/common/table/TableGrid.vue'),
+            meta: { title: '基础表格' }
+        },
+        {
+            path: '/treeTable',
+            component: () => import( '../components/page/common/table/TreeTable.vue'),
+            meta: { title: '基础表格' }
+        },
         {
             path: '/table',
             component: () => import( '../components/page/BaseTable.vue'),
