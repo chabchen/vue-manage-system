@@ -4,29 +4,41 @@
     </div>
 </template>
 <script>
-import asyncLoadComp from './asyncLoadComp.vue'
-export default {
-    components: {asyncLoadComp},
-    data () {
-        return {
-            comps: [
-                {app:'filter/filter-radio',prop:{name:'张三1'}},
-                {app:'filter/filter-card',prop:{name:'张三2'}},
-                {app:'filter/filter-card',prop:{name:'张三3'}},
-                {app:'echarts/LineBar',prop:{name:'张三4'}},
-                {app:'echarts/Line',prop:{name:'张三5'}},
-                {app:'table/Table',prop:{
-                    tableColumns:[
-                        {prop:"date",label:"店铺"},
-                        {prop:"name",label:"访客数"},
-                        {prop:"sss",label:"成交人数"},
-                        {prop:"ddd",label:"成交转化率"},
-                        {prop:"fff",label:"GMV"},
-                        {prop:"ggg",label:"人均消费222"}
-                    ]
-                }}
-            ]                
-       }
+    import asyncLoadComp from './asyncLoadComp.vue'
+    import {requestData} from '@/api/RequestData';
+    export default {
+        components: { asyncLoadComp },
+        data() {
+            return {
+                reportId: '',
+                comps: []
+            }
+        },
+        created() {
+            debugger
+            if(!this.$route.query.reportId){return;}
+            this.reportId = this.$route.query.reportId;
+            this.loadReportConfig();
+        },
+        methods: {
+            loadReportConfig(){
+                requestData('/sysReportDetail/list','get',{'parentId':this.reportId}).then(res => {
+                    let tableData = [];
+                    if(res.datas && res.datas.length){
+                        tableData = res.datas;
+                        this.loadReport(tableData);
+                    }                       
+                });
+            },
+            loadReport(data){
+                this.comps = [];
+                for(let i = 0 ,j = data.length;i<j;i++){
+                    this.comps.push({app: data[i].url,prop: {config:JSON.parse(data[i].config)}});
+                }       
+            },
+            parentSearchEvent(datas){
+               console.log(datas);
+            }
+        }
     }
-}
 </script>
