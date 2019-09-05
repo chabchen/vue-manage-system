@@ -27,8 +27,8 @@ var routes = [{
             meta: { title: '测试' }
         },
         {
-            path: '/filterCard',
-            component: resolve => require(['../components/page/common/filter/filter-card.vue'], resolve),
+            path: '/echartsMap',
+            component: resolve => require(['../components/page/common/echarts/Map.vue'], resolve),
         },
         {
             path: '/menuManage',

@@ -1,51 +1,48 @@
 <template>
-    <div class="echart-ex1" style="width:49%">
-        <div class="lineBar-title">
-            <p>{{selectData.title}}</p>
-            <div v-show = "selectData.showSelect" class="lineBar-select">
-                {{selectData.label}}
-                <el-select v-model="selectData.value" placeholder="请选择">
-                    <el-option v-for="item in selectData.options" :key="item.value" :label="item.label" :value="item.value"/>
-                </el-select>
+    <div :style="{width:widthData}" class="line-box">
+        <div class="echart-ex1">
+            <div class="lineBar-title">
+                <p>{{selectData.title}}</p>
+                <div v-show="selectData.showSelect" class="lineBar-select">
+                    {{selectData.label}}
+                    <el-select v-model="selectData.value" placeholder="请选择">
+                        <el-option v-for="item in selectData.options" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                </div>
             </div>
+            <ve-histogram width=100% height="414px" :extend="chartExtend" :colors="chartSettings.chartColor" :data="chartData" :loading="loading"
+                :settings="chartSettings" />
         </div>
-        <ve-histogram
-        width=100%
-        height="414px"
-        :extend="chartExtend"
-        :colors="chartSettings.chartColor"
-        :data="chartData" 
-        :loading="loading"
-        :settings="chartSettings"/>
     </div>
 </template>
-    
+
 <script>
-export default {
-    props: { prop: Object },
-    data () {
-        return {
-            loading:true,
-            selectData:{},
-            chartData: {},
-            chartExtend:{}, 
-            chartSettings : {}
+    export default {
+        props: { prop: Object },
+        data() {
+            return {
+                loading: true,
+                selectData: {},
+                chartData: {},
+                chartExtend: {},
+                chartSettings: {},
+                widthData:'50%'
+            }
+        },
+        created() {
+            this.loading = false;
+            this.selectData = this.prop.config.selectData;
+            this.chartData = this.prop.config.chartData;
+            this.chartExtend = this.prop.config.chartExtend;
+            this.chartSettings = this.prop.config.chartSettings;
         }
-    },
-    created() {
-        this.loading = false;
-        this.selectData = this.prop.config.selectData;
-        this.chartData = this.prop.config.chartData;
-        this.chartExtend = this.prop.config.chartExtend;
-        this.chartSettings = this.prop.config.chartSettings;
-   }
-}
+    }
 </script>
 <style scoped>
-    
     .echart-ex1 {
         display: inline-block;
-        margin-right: 20px;
+        width: 95%;
+        margin: 0 auto;
         border-width: 0px;
         height: 500px;
         background: inherit;
@@ -55,8 +52,10 @@ export default {
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
-   }
-    .lineBar-title{ 
+        box-sizing: border-box;
+    }
+
+    .lineBar-title {
         font-family: 'Arial Normal', 'Arial';
         font-weight: 600;
         font-style: normal;
@@ -68,14 +67,21 @@ export default {
         text-transform: none;
         background: #409eff;
         color: #fff;
-        padding-left:15px;
+        padding-left: 15px;
         margin: 30px 0 60px 0;
-   }
-   .lineBar-title p{
-        display:inline-block;
     }
-   .lineBar-select{
-        float:right;
+
+    .lineBar-title p {
+        display: inline-block;
+    }
+
+    .lineBar-select {
+        float: right;
         margin-right: 15px;
-   }
+    }
+
+    .line-box {
+        box-sizing: border-box;
+        display: inline-block;
+    }
 </style>
