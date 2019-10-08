@@ -51,7 +51,6 @@
 
 <script>
 import bus from "../common/bus";
-import {requestData} from '../../api/RequestData';
 export default {
     data() {
         return {
@@ -110,14 +109,8 @@ export default {
             this.iteminput = "";
         },
         getData() {
-            // this.items = JSON.parse(localStorage.getItem("sidebarData"));
-            // let url = "management/menus/menuForTreeByUser";
-            // if (window.config.active == "dev") {
-            //     url = "/sysMenu/menuForTree";
-            // }
-            requestData('/sysMenu/menuForTree','get').then(res => {
+            this.$requestData('/sysMenu/menuForTree','get').then(res => {
                 this.items = res.datas ? res.datas : [];
-               // localStorage.setItem("sidebarData", JSON.stringify(this.items));
             });
         },
         openRouter(router) {

@@ -26,7 +26,7 @@
                 </el-table-column>
                 <el-table-column prop="config" label="配置信息" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="sql" label="sql配置" show-overflow-tooltip>
+                <el-table-column prop="sqls" label="sql配置" show-overflow-tooltip>
                 </el-table-column>
                 <el-table-column prop="orderNumber" label="序号" sortable>
                 </el-table-column>
@@ -41,8 +41,8 @@
                 </el-table-column>
             </el-table>
             <div class="pagination">
-                <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[10, 20, 30, 40]"
-                    :page-size="10" layout="total, sizes, prev, pager, next, jumper" :total="total">
+                <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[50, 100, 150, 200]"
+                    :page-size="50" layout="total, sizes, prev, pager, next, jumper" :total="total">
                 </el-pagination>
             </div>
         </div>
@@ -55,7 +55,7 @@
                 </el-form-item>
                 <el-form-item label="文件路径">
                     <el-select v-model="formData.url" filterable placeholder="请选择">
-                        <el-option v-for="item in fileUrlArr" :label="item.label" :value="item.value">
+                        <el-option v-for="item in componentList" :key="item.value" :label="item.label" :value="item.value">
                         </el-option>
                     </el-select>
                 </el-form-item>
@@ -69,7 +69,7 @@
                     <el-input type="textarea" rows="12" v-model="formData.config"></el-input>
                 </el-form-item>
                 <el-form-item label="sql配置">
-                    <el-input type="textarea" rows="12" v-model="formData.sql"></el-input>
+                    <el-input type="textarea" rows="12" v-model="formData.sqls"></el-input>
                 </el-form-item>
                 <el-form-item label="序号">
                     <el-input v-model="formData.orderNumber"></el-input>
@@ -86,12 +86,11 @@
 </template>
 
 <script>
-    import { requestData } from '../../api/RequestData';
     export default {
         data() {
             return {
                 loading: true,
-                pagesize: "10",
+                pagesize: 50,
                 total: 0,
                 tableData: [],
                 reportData: [],
@@ -104,20 +103,16 @@
                 formData: {},
                 rowId: "",
                 flag: true,
-                fileUrlArr: [
-                    {label:'筛选器1',value:'filter/ConditionalSeaech'},
-                    {label:'卡片1',value:'filter/filter-card'},
-                    {label:'柱状图-折线图',value:'echarts/LineBar'},
-                    {label:'堆叠柱状图',value:'echarts/BarStack'},
-                    {label:'折线图',value:'echarts/Line'},
-                    {label:'表格1',value:'table/Table'},
-                    {label:'三级下钻表格',value:'table/DynamicTable'},
-                    {label:'KPI指标',value:'title/title-kpi'}
-                ]
+                componentList: [],
+                reportId: '',
             };
         },
         created() {
+            if(this.$route.query.reportId){
+                this.reportId = this.$route.query.reportId;
+            }            
             this.getData();
+            this.componentList = this.$getComponents();
         },
         computed: {
             // 搜索
@@ -133,7 +128,7 @@
                     if (!is_del) {
                         if (
                             data.name.indexOf(this.select_word) > -1 ||
-                            data.type.indexOf(this.select_word) > -1
+                            data.remark.indexOf(this.select_word) > -1
                         ) {
                             return data;
                         }
@@ -169,18 +164,18 @@
             //获取数据
             getData() {
                 this.loading = false;
-                requestData('/sysReportDetail/list', 'get', { 'currentPage': this.currentPage,'pageSize': this.pagesize}).then(res => {
+                this.$requestData('/sysReportDetail/list', 'get', { 'currentPage': this.currentPage,'pageSize': this.pagesize,'parentId':this.reportId}).then(res => {
                     this.tableData = [];
-                    if (res.datas && res.datas.list.length) {
-                        this.tableData = res.datas.list;
+                    if (res.datas && (res.datas.length || res.datas.list.length)) {
+                        this.tableData = res.datas.list ? res.datas.list : res.datas;
                         this.total = res.datas.total;
                     }
                     this.loading = false;
                 });
-                requestData('/sysReport/list', 'get', { 'currentPage': this.currentPage }).then(res => {
+                this.$requestData('/sysReport/list', 'get', { 'currentPage': this.currentPage,'pageSize': this.pagesize,'reportId':this.reportId }).then(res => {
                     this.reportData = [];
-                    if (res.datas && res.datas.list.length) {
-                        this.reportData = res.datas.list;
+                    if (res.datas && (res.datas.length || res.datas.list.length)) {
+                        this.reportData = res.datas.list ? res.datas.list : res.datas;
                     }
                 });
             },
@@ -193,7 +188,7 @@
                         url: row.url,
                         parentId: row.parentId,
                         config: row.config,
-                        sql: row.sql,
+                        sqls: row.sqls,
                         orderNumber: row.orderNumber
                     };
                     this.dialogTitle = "编辑";
@@ -246,9 +241,9 @@
             saveForm() { // 保存
                 var param = this.formData;
                 param.config = param.config ? this.format(param.config,true) : '';
-                param.sql = param.sql ? this.format(param.sql,true) : '';
-                if(param.config == 'false' || param.sql == 'false'){return;}
-                requestData('/sysReportDetail/save', 'post', param).then(res => {
+                param.sqls = param.sqls ? param.sqls : '';
+                if(param.config == 'false' || param.sqls == 'false'){return;}
+                this.$requestData('/sysReportDetail/save', 'post', param).then(res => {
                     this.dialogVisible = false;
                     this.$message.success(`操作成功!!`);
                     this.getData();
@@ -267,7 +262,7 @@
                 })
                     .then(() => {
                         let url = "/sysReportDetail/delete/" + rowId;
-                        requestData(url, 'post').then(res => {
+                        this.$requestData(url, 'post').then(res => {
                             this.$message.success("操作成功!!");
                             this.getData();
                         });
@@ -294,7 +289,7 @@
                     type: "warning"
                 })
                     .then(() => {
-                        requestData(url, 'post').then(res => {
+                        this.$requestData(url, 'post').then(res => {
                             this.$message.success("操作成功!!");
                             this.multipleSelection = [];
                             this.getData();

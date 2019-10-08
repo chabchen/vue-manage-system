@@ -4,26 +4,35 @@ import router from './router';
 import VCharts from 'v-charts';
 import echarts from "echarts";
 import ElementUI from 'element-ui';
-import VueI18n from 'vue-i18n';
-import { messages } from './components/common/i18n';
 import 'element-ui/lib/theme-chalk/index.css'; // 默认主题
 // import './assets/css/theme-green/index.css'; // 浅绿色主题
 import './assets/css/icon.css';
 import './components/common/directives';
 import 'babel-polyfill';
+import { requestData } from './api/RequestData';
+import {setFinanceVal,setDecimalVal,getComponents} from './components/common/utils/common.js'
 
 
 Vue.config.productionTip = false;
 
-Vue.use(VueI18n);
 Vue.use(ElementUI, {size: 'small'});
 Vue.use(VCharts);
-Vue.prototype.$echarts = echarts 
-const i18n = new VueI18n({locale: 'zh',messages});
+
+Vue.prototype.$requestData = requestData;
+Vue.prototype.$echarts = echarts; 
+//金额千分位转换函数
+Vue.prototype.$setFinanceVal = setFinanceVal;
+Vue.prototype.$setDecimalVal = setDecimalVal;
+//组件列表
+Vue.prototype.$getComponents = getComponents;
+
+
+
 
 //使用钩子函数对路由进行权限跳转
 router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} | vue-manage-system`;
+    localStorage.setItem('ms_username',"admin");
     const role = localStorage.getItem('ms_username');
     if (!role && to.path !== '/login') {
         next('/login');
@@ -43,3 +52,4 @@ router.beforeEach((to, from, next) => {
 });
 
 export const VueObj = new Vue({router,render: h => h(App)}).$mount('#app');
+

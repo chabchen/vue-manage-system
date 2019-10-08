@@ -1,7 +1,9 @@
 <template>
     <div class="container">
+     <div class="fix">
         <async-load-comp v-for="(item,index) in comps" :key="index" :app="item.app" :prop="item.prop"></async-load-comp>
-    </div>
+     </div>
+   </div>
 </template>
 <script>
     import asyncLoadComp from './asyncLoadComp.vue'
@@ -148,6 +150,7 @@
                                 title: '疾病损失-泌乳天数视角',
                                 label: '指标分组',
                                 value: '',
+                                showSelect: true,
                                 options: [{ value: '选项1', label: '经济损失' }, { value: '选项2', label: '奶量损失' }]
                             },
                             chartData: {
@@ -196,7 +199,8 @@
                                 { prop: "ggg", label: "人均消费222" }
                             ],
                             title: '流失奶站明细-大区视角'
-                        }}
+                        }
+                    }
                     },
                     {app: 'table/DynamicTable',prop:{
                         config:{
@@ -234,3 +238,15 @@
         }
     }
 </script>
+<style scoped>
+    .container:after{
+        clear:both;
+        content:'';
+        display:block;
+        width:0;
+        height:0;
+        visibility:hidden;
+    }
+    .container { zoom:1; }
+
+</style>

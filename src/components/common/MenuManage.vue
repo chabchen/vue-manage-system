@@ -84,8 +84,6 @@
     
 <script>
 
-import {requestData} from '../../api/RequestData';
-
 export default {
     name: "sysmenu",
     data() {
@@ -160,7 +158,7 @@ export default {
         //获取数据
         getData() {
             this.loading = true;
-            requestData('/sysMenu/menuForTree','get',{'type':'all','currentPage':this.currentPage}).then(res => {
+            this.$requestData('/sysMenu/menuForTree','get',{'type':'all','currentPage':this.currentPage}).then(res => {
                 this.tableData = [];
                 if(res.datas && res.datas.list.length){
                     this.tableData = res.datas.list;
@@ -196,7 +194,7 @@ export default {
         saveForm() { // 保存
             var param = this.formData;
             param.parentId = param.parentId ? param.parentId : "0";
-            requestData('/sysMenu/save','post',param).then(res => {
+            this.$requestData('/sysMenu/save','post',param).then(res => {
                 this.dialogVisible = false;
                 this.$message.success(`操作成功!!`);
                 this.getData();
@@ -215,7 +213,7 @@ export default {
             })
             .then(() => {
                 let url = "/sysMenu/delete/" + rowId;
-                requestData(url,'post').then(res => {
+                this.$requestData(url,'post').then(res => {
                     this.$message.success("操作成功!!");
                     this.getData();
                 });
@@ -242,7 +240,7 @@ export default {
                 type: "warning"
             })
             .then(() => {
-                requestData(url,'post').then(res => {
+                this.$requestData(url,'post').then(res => {
                     this.$message.success("操作成功!!");
                     this.multipleSelection = [];
                     this.getData();

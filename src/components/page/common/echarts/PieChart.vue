@@ -10,30 +10,38 @@
                     </el-select>
                 </div>
             </div>
-            <ve-line :data="chartData" width=100% height="414px" :extend="chartExtend" :colors="chartSettings.chartColor" :loading="loading"
-                :settings="chartSettings" />
+            <ve-pie :data="chartData" :settings="chartSettings" :loading="loading"></ve-pie>
         </div>
     </div>
 </template>
+
 <script>
     export default {
         props: { prop: Object },
         data() {
             return {
-                selectData: {},
-                chartData: {},
-                chartExtend: {},
-                chartSettings: {},
                 loading: true,
-                widthData: '100%',
-                params: '',
+                selectData: {},
+                params: "",
+                widthData: '50%',
+                chartData: {
+                    columns: ['日期', '访问用户'],
+                    rows: [
+                        { '日期': '1/1', '访问用户': 1393 },
+                        { '日期': '1/2', '访问用户': 3530 },
+                        { '日期': '1/3', '访问用户': 2923 },
+                        { '日期': '1/4', '访问用户': 1723 },
+                        { '日期': '1/5', '访问用户': 3792 },
+                        { '日期': '1/6', '访问用户': 4593 }
+                    ]
+                },
+                chartSettings: {},
             }
         },
         created() {
             this.loading = false;
             this.selectData = this.prop.config.selectData;
             this.chartData = this.prop.config.chartData;
-            this.chartExtend = this.prop.config.chartExtend;
             this.chartSettings = this.prop.config.chartSettings;
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
@@ -92,8 +100,8 @@
 
     .echart-ex1 {
         display: inline-block;
-        width: 100%;
-        margin: 0 auto;
+        width: 98%;
+        margin: 2% auto;
         border-width: 0px;
         height: 500px;
         background: inherit;
@@ -104,7 +112,6 @@
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-sizing: border-box;
-        overflow: hidden
     }
 
     .line-title p {
@@ -118,7 +125,6 @@
 
     .line-box {
         box-sizing: border-box;
-        display: inline-block;
-        margin: 0;
+        display: inline-flex;
     }
 </style>

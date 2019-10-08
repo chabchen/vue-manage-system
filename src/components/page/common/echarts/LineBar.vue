@@ -26,7 +26,8 @@
                 chartData: {},
                 chartExtend: {},
                 chartSettings: {},
-                widthData:'50%'
+                widthData: '50%',
+                params: '',
             }
         },
         created() {
@@ -35,14 +36,49 @@
             this.chartData = this.prop.config.chartData;
             this.chartExtend = this.prop.config.chartExtend;
             this.chartSettings = this.prop.config.chartSettings;
+            if(this.prop.config.widthData){
+                this.widthData = this.prop.config.widthData;
+            }
+        },
+        computed: {
+            changeParams() {
+                return this.prop.params;
+            }
+        },
+        watch: {
+            changeParams(newValue) {
+                if(!newValue){return;}
+                this.params = newValue;
+                //this.loadReportData(newValue);
+                this.prop.params = "";
+            }
+        },
+        methods: {
+
+            loadReportData(params) {
+                let sql = this.prop.sqls;
+                for (let obj of params.searchSelect) {
+                    if (!obj.value) { continue; }
+                    if (obj.operation != 'in') {
+                        sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
+                    }
+                }
+                if (groupby) {
+                    groupby = ' group by ' + groupby;
+                    sql += groupby;
+                }
+                this.$requestData('/report/list', 'post', { params: sql }).then(res => {
+                    this.chartData = res.datas;
+                });
+            },
         }
     }
 </script>
 <style scoped>
     .echart-ex1 {
         display: inline-block;
-        width: 95%;
-        margin: 0 auto;
+        width: 98%;
+        margin: 2% auto;
         border-width: 0px;
         height: 500px;
         background: inherit;
@@ -82,6 +118,6 @@
 
     .line-box {
         box-sizing: border-box;
-        display: inline-block;
+        display: inline-grid;
     }
 </style>

@@ -8,7 +8,7 @@
                         <el-checkbox v-model="data.checked" />
                     </i>
                 </div>
-                <div style="text-align: center">
+                <div style="text-align: center;min-height: 30px;">
                     <b>{{data.value}}</b>
                     <i>{{data.unit}}</i>
                 </div>
@@ -35,12 +35,44 @@
         props: { prop: Object },
         data() {
             return {
-                data: {
-                }
+                data: "",
+                params: "",
             }
         },
         created() {
             this.data = this.prop.config.items;
+        },
+        computed: {
+            changeParams() {
+                return this.prop.params;
+            }
+        },
+        watch: {
+            changeParams(newValue) {
+                if(!newValue){return;}
+                this.params = newValue;
+                //this.loadReportData(newValue);
+                this.prop.params = "";
+            }
+        },
+        methods: {
+
+            loadReportData(params) {
+                let sql = this.prop.sqls;
+                for (let obj of params.searchSelect) {
+                    if (!obj.value) { continue; }
+                    if (obj.operation != 'in') {
+                        sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
+                    }
+                }
+                if (groupby) {
+                    groupby = ' group by ' + groupby;
+                    sql += groupby;
+                }
+                this.$requestData('/report/list', 'post', { params: sql }).then(res => {
+                    this.data = res.datas;
+                });
+            },
         }
     }
 </script>
@@ -51,7 +83,7 @@
         width: 25%;
         /* margin: 20px; */
         padding: 5px;
-        display: inline-block;
+        display: inline-grid;
         box-sizing: border-box;
         margin: 5px auto;
     }

@@ -4,8 +4,10 @@ export const requestData = (url,method,query) => {
     if('get' == method && query){
         url += "?";
         for(let field in query){
-            url += "&"+field + "=" + query[field];
+            if(query[field]){url += "&"+field + "=" + query[field];}
         }
+        url = url.replace("&","");
+        url = encodeURI(url);
     }
     return request({
         url: url,

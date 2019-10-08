@@ -20,7 +20,6 @@
 
 <script>
 
-import {requestData} from '@/api/RequestData';
 
 export default {
     props: {prop: Object},
@@ -76,7 +75,7 @@ export default {
        },
        getData : function(params) {
             this.loading = true;
-            requestData('/report/list','get').then(res => {
+            this.$requestData('/report/list','post').then(res => {
                
                 if(res.datas && res.datas.length){
                     this.tableData = [];

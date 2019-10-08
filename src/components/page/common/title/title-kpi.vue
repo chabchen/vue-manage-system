@@ -6,7 +6,11 @@
                     <div class="item-compare">
                         <p class="pro_kpi_title">{{item.key}}</p>
                         <p class="kpi_content">{{item.value}}</p>
+                        <i>{{item.unit}}</i>
                     </div>
+                </div>
+                <div v-if="showButton">
+                        <el-button class="ax-search" type="primary" @click="searchEvent" icon="el-icon-search">{{buttonTitle}}</el-button>
                 </div>
             </div>
         </div>
@@ -14,18 +18,26 @@
 </template>
 <script>
 
-import {requestData} from '@/api/RequestData';
 
 export default {
     props: {prop: Object},
     data() {
         return {
-            items:[]
+            items:[],
+            showButton: false,
+            buttonTitle: '查询',
         }
     },
     created() {
         this.items = this.prop.config.items;
-    }
+        this.showButton = this.prop.config.showButton;
+        this.buttonTitle = this.prop.config.buttonTitle; 
+    },
+    methods: {
+            searchEvent() {
+
+            }
+        }
 }
 </script>
 
@@ -61,13 +73,11 @@ export default {
 
 
 .kpi_list .kpi_item .kpi_content{
-	flex: 1;
 	color: #888;
 	font-weight: 700;
 	padding: 5px;
 	font-size: 20px;
-	margin: 0;
-	white-space: nowrap;
+	margin-left: 5px;
 }
 
 .pro_kpi_title{
@@ -77,7 +87,6 @@ export default {
 	color: rgb(61, 122, 183);
 	font-weight: 700;
 	min-width: 80px;
-	width: 80px;
 	padding: 5px;
 	margin: 0px;
 }

@@ -1,9 +1,9 @@
 <template>
-    <div>
+    <div :style="{width:widthData}" class="line-box">
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <el-table :data="tableData" :span-method="objectSpanMethod" border>
+        <el-table class="height_390" :data="tableData" :span-method="objectSpanMethod" border>
             <template v-for="(col, index) in tableColumns">
                 <el-table-column :key="index" :prop="col.prop" :label="col.label">
                     <template slot="header" slot-scope="scope">
@@ -24,7 +24,9 @@
         props: { prop: Object },
         data() {
             return {
+                params: '',
                 title:'',
+                widthData: '100%',
                 rowspanData: {},
                 level: 1,
                 tableColumns: [],
@@ -248,10 +250,43 @@
                 
             };
         },
+        computed: {
+            changeParams() {
+                return this.prop.params;
+            }
+        },
+        watch: {
+            changeParams(newValue) {
+                if(!newValue){return;}
+                this.params = newValue;
+                //this.loadReportData(newValue);
+                this.prop.params = "";
+            }
+        },
         created() {
+            if(this.prop.config.widthData){
+                this.widthData = this.prop.config.widthData;
+            }
             this.loadTableHead(this.prop.config.level);
         },
         methods: {
+
+            loadReportData(params) {
+                let sql = this.prop.sqls;
+                for (let obj of params.searchSelect) {
+                    if (!obj.value) { continue; }
+                    if (obj.operation != 'in') {
+                        sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
+                    }
+                }
+                if (groupby) {
+                    groupby = ' group by ' + groupby;
+                    sql += groupby;
+                }
+                this.$requestData('/report/list', 'post', { params: sql }).then(res => {
+                    this.tableData = res.datas;
+                });
+            },
             loadTableHead(level) {//动态加载表头
                 let tableColumns = this.prop.config['items' + level];
                 this.tableColumns = tableColumns.concat(this.prop.config.items);
@@ -337,6 +372,16 @@
     }
 
     .head-title p {
-        display: inline-block;
+        display: inline-grid;
+    }
+    .line-box {
+        box-sizing: border-box;
+        display: inline-grid;
+        -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
+        -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
+        box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
+    }
+    .height_390{
+        height: 390px
     }
 </style>
