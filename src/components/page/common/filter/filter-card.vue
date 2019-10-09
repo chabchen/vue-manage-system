@@ -1,5 +1,5 @@
 <template>
-    <div class="wrapper">
+    <div :style="{width:widthData}" class="wrapper" >
         <div class="wrap" style="height: 120px;">
             <div class="item" style="margin: auto">
                 <div class="c_title" style="text-align: center">
@@ -35,12 +35,16 @@
         props: { prop: Object },
         data() {
             return {
+                widthData: "25%",
                 data: "",
                 params: "",
             }
         },
         created() {
             this.data = this.prop.config.items;
+            if(this.prop.config.widthData){
+                this.widthData = this.prop.config.widthData;
+            }
         },
         computed: {
             changeParams() {
@@ -80,8 +84,6 @@
 
 <style scoped>
     .wrapper {
-        width: 25%;
-        /* margin: 20px; */
         padding: 5px;
         display: inline-grid;
         box-sizing: border-box;
