@@ -4,7 +4,7 @@
             <div class="grid-content bg-purple" v-if="ieo.dataShow">
                 <div class="block">
                     <div class="demonstration">{{ieo.title}}</div>
-                    <el-date-picker class="wd_150" v-model="ieo.beginDate" :type='ieo.beginDateType' placeholder="选择日期" />
+                    <el-date-picker class="wd_150" v-model="ieo.beginDate" :type='ieo.dateType' placeholder="选择日期" />
                 </div>
             </div>
         </div>
