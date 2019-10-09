@@ -3,7 +3,7 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <el-table :data="tableData" class="height_390" border stripe>
+        <el-table :data="tableData" class="max_height_390" border stripe>
             <template v-for="(col, index) in tableColumns">
                 <el-table-column show-overflow-tooltip :key="index" :prop="col.prop" :label="col.label"></el-table-column>
             </template>
@@ -83,7 +83,7 @@
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
     }
 
-    .height_390 {
-        height: 390px
+    .max_height_390 {
+        max-height: 390px
     }
 </style>

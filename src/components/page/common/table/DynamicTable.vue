@@ -3,7 +3,7 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <el-table class="height_390" :data="tableData" :span-method="objectSpanMethod" border>
+        <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" border>
             <template v-for="(col, index) in tableColumns">
                 <el-table-column :key="index" :prop="col.prop" :label="col.label">
                     <template slot="header" slot-scope="scope">
@@ -381,7 +381,7 @@
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
     }
-    .height_390{
-        height: 390px
+    .max_height_390{
+        max-height: 390px
     }
 </style>
