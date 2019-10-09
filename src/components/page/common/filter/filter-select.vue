@@ -119,10 +119,13 @@
         font-family: inherit;
         line-height: 16px;
     }
+    .el-select__tags{
+        max-width: 100% !important;
+    }
 
     .el-select__tags-text {
         display: inline-block;
-        width: 30px;
+        max-width: 60px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;

@@ -59,7 +59,6 @@
                             obj.options = res.datas;
                             if (obj.value) { obj.value = res.datas[0].value; }
                         });
-                        continue;
                     }
                 }
                 this.searchEvent();
