@@ -40,14 +40,14 @@ export function setDecimalVal(num) {
 export function getComponents() {
     let comps = [
         { label: '筛选器1', value: 'filter/ConditionalSeaechs' },
-        { label: '筛选器2', value: 'filter/ConditionalSeaech' },
+        // { label: '筛选器2', value: 'filter/ConditionalSeaech' },
         { label: '卡片1', value: 'filter/filter-card' },
         { label: '柱状图-折线图', value: 'echarts/LineBar' },
         { label: '堆叠柱状图', value: 'echarts/BarStack' },
         { label: '折线图', value: 'echarts/Line' },
         { label: '饼状图', value: 'echarts/PieChart' },
         { label: '表单1', value: 'form/Form' },
-        { label: '表格1', value: 'table/Table' },
+        { label: '表格1', value: 'table/TableGrid' },
         { label: '三级下钻表格', value: 'table/DynamicTable' },
         { label: 'KPI指标', value: 'title/title-kpi' },
         { label: '地图', value: 'map/Map' },

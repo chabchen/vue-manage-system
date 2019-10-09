@@ -95,12 +95,12 @@
         background: #409eff;
         color: #fff;
         padding-left: 15px;
-        margin: 30px 0 60px 0;
+        margin: 10px 0 10px 0;
     }
 
     .echart-ex1 {
         display: inline-block;
-        width: 98%;
+        width: 99.6%;
         margin: 2% auto;
         border-width: 0px;
         height: 500px;

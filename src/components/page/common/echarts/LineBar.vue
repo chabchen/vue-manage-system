@@ -77,10 +77,10 @@
 <style scoped>
     .echart-ex1 {
         display: inline-block;
-        width: 98%;
+        width: 99.6%;
         margin: 2% auto;
         border-width: 0px;
-        height: 500px;
+        height: 440px;
         background: inherit;
         background-color: rgba(255, 255, 255, 1);
         border: none;
@@ -104,7 +104,7 @@
         background: #409eff;
         color: #fff;
         padding-left: 15px;
-        margin: 30px 0 60px 0;
+        margin: 10px 0 10px 0;
     }
 
     .lineBar-title p {

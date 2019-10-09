@@ -368,7 +368,7 @@
         background: #409eff;
         color: #fff;
         padding-left: 15px;
-        margin: 30px 0 30px 0;
+        margin: 10px 0 10px 0;
     }
 
     .head-title p {
