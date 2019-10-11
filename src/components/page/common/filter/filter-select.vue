@@ -1,5 +1,5 @@
 <template>
-    <el-select v-model="selectData.value" :multiple="selectData.multiple" filterable clearable collapse-tags placeholder="请选择">
+    <el-select v-model="selectData.value" :multiple="selectData.multiple" filterable :clearable = "selectData.clearable" collapse-tags placeholder="请选择">
         <template v-if="selectData.multiple">
             <el-input style="width: 90%;margin-left: 5%" v-model="selectData.searchValue" placeholder="请输入搜索内容"></el-input>
             <el-row>
@@ -27,6 +27,7 @@
                     checkboxValue: false,
                     searchValue: '',
                     multiple: true,
+                    clearable: true,
                 },
                 searchDatas: "",
             }

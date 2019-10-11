@@ -4,8 +4,13 @@
             <p>{{title}}</p>
         </div>
         <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" border>
-            <template v-for="(col, index) in tableColumns">
-                <el-table-column :key="index" :prop="col.prop" :label="col.label">
+            <template v-for="(col, index) in tableColumns" >
+                <el-table-column v-if = "col.children" :prop="col.prop" :label="col.label" >
+                    <template v-for="(col2,index2) in col.children">
+                        <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable = "col2.sortable"/>
+                    </template>    
+                </el-table-column>
+                <el-table-column v-else  :key="index" :prop="col.prop" :label="col.label" :sortable = "col.sortable" :span-method="columnSpanMethod">    
                     <template slot="header" slot-scope="scope">
                         {{col.label}}
                         <el-row v-show="col.event" style="float: right;line-height:0;">
@@ -288,8 +293,9 @@
                 });
             },
             loadTableHead(level) {//动态加载表头
-                let tableColumns = this.prop.config['items' + level];
-                this.tableColumns = tableColumns.concat(this.prop.config.items);
+                let tableColumn = this.prop.config['items' + level];
+                this.tableColumns = tableColumn.concat(this.prop.config.items);
+                console.log(this.tableColumns);
                 this.title = this.prop.config.title;
                 this.level = level;
                 this.tableData = this['tableData' + level];
@@ -314,6 +320,9 @@
                 if (index == 0 && type == 'open') {
                     this.loadTableHead(2);
                 }
+            },
+            columnSpanMethod(row, column, rowIndex, columnIndex){
+                console.log(columnIndex);
             },
             objectSpanMethod({ row, column, rowIndex, columnIndex }) {//动态合并行
                 if (row.level > 1 && columnIndex === 0) {
@@ -382,6 +391,7 @@
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
     }
     .max_height_390{
-        max-height: 390px
+        max-height: 390px;
+        overflow:  auto;
     }
 </style>

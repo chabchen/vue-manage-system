@@ -21,11 +21,11 @@
                 <el-table-column type="selection" width="55"></el-table-column>
                 <el-table-column prop="name" label="名称" sortable width="150">
                 </el-table-column>
-                <el-table-column prop="description" label="文件路径" sortable width="120">
+                <el-table-column prop="description" label="文件路径" show-overflow-tooltip sortable width="120">
                 </el-table-column>
                 <el-table-column prop="type" label="类型" sortable>
                 </el-table-column>
-                <el-table-column prop="url" label="链接" sortable>
+                <el-table-column prop="url" label="链接" show-overflow-tooltip sortable>
                 </el-table-column>
                 <el-table-column prop="icon" label="图标" sortable>
                 </el-table-column>

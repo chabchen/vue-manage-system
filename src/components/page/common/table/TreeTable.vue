@@ -17,7 +17,10 @@
         data() {
             return {
                 loading: true,
-                tableColumns:[],
+                tableColumns:[{ prop: "date", label: "店铺" },
+                                { prop: "name", label: "访客数" },
+                                { prop: "address", label: "地址" }
+                               ],
                 tableData: [{
                     id: 1,
                     date: '2016-05-02',
@@ -110,7 +113,7 @@
         },
         created() {
             this.loading = false;
-            this.tableColumns = this.prop.config.items;
+            //this.tableColumns = this.prop.config.items;
         },
         methods: {
 

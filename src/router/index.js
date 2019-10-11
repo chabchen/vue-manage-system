@@ -32,14 +32,6 @@ var routes = [{
             component: resolve => require(['../components/page/common/filter/filter-select.vue'], resolve),
         },
         {
-            path: '/echartsMap',
-            component: resolve => require(['../components/page/common/map/Map.vue'], resolve),
-        },
-        {
-            path: '/echartsMap2',
-            component: resolve => require(['../components/page/common/map/MapGeo.vue'], resolve),
-        },
-        {
             path: '/menuManage',
             component: resolve => require(['../components/common/MenuManage.vue'], resolve),
             meta: { title: '菜单管理', permission: true }

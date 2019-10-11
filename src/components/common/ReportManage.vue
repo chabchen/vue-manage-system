@@ -20,17 +20,17 @@
             <el-table stripe border height="650" :row-class-name="handleSelectedBg" @row-click="rowclick" :data="data" ref="multipleTable"
                 @selection-change="handleSelectionChange" :default-sort="{prop: 'date', order: 'descending'}">
                 <el-table-column type="selection" width="55"></el-table-column>
-                <el-table-column prop="name" label="报表名称" sortable>
+                <el-table-column prop="name" label="报表名称" show-overflow-tooltip sortable>
                     <template slot-scope="scope">
                         <a @click="openDetailedPage(scope.row)" style="color:#3cabf4;cursor:pointer;">{{scope.row.name}}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="reportId" label="文件路径">
+                <el-table-column prop="reportId" show-overflow-tooltip label="文件路径">
                     <template slot-scope="scope">
                         <a @click="openDetailed(scope.row)" style="color:#3cabf4;cursor:pointer;">{{scope.row.reportId}}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="type" label="类型" sortable>
+                <el-table-column prop="type" label="类型" show-overflow-tooltip sortable>
                 </el-table-column>
                 <el-table-column label="操作" width="200">
                     <template slot-scope="scope">

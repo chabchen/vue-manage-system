@@ -84,6 +84,7 @@
     }
 
     .max_height_390 {
-        max-height: 390px
+        max-height: 390px;
+        overflow:  auto;
     }
 </style>

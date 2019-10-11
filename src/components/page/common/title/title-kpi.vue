@@ -3,14 +3,20 @@
         <div>
             <div class="kpi_list">
                 <div class="kpi_item"  v-for="(item, index) in items">
-                    <div class="item-compare">
+                    <div v-if = "item.children" v-for="(item2, index2) in item.children" class="item-compare">
+                        <p class="pro_kpi_title">{{item2.key}}</p>
+                        <p class="kpi_content">{{item2.value}}</p>
+                        <i>{{item.unit}}</i>
+                    </div>
+                    <div v-if = "!item.children" class="item-compare">
                         <p class="pro_kpi_title">{{item.key}}</p>
                         <p class="kpi_content">{{item.value}}</p>
                         <i>{{item.unit}}</i>
                     </div>
+
                 </div>
                 <div v-if="showButton">
-                        <el-button class="ax-search" type="primary" @click="searchEvent" icon="el-icon-search">{{buttonTitle}}</el-button>
+                    <el-button class="ax-search" type="primary" @click="searchEvent" icon="el-icon-search">{{buttonTitle}}</el-button>
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 <template>
     <div :style="{width:widthData}" class="line-box">
         <div class="echart-ex1">
-            <div class="lineBar-title">
+            <div v-if = "selectData.title" class="lineBar-title">
                 <p>{{selectData.title}}</p>
                 <div v-show="selectData.showSelect" class="lineBar-select">
                     {{selectData.label}}

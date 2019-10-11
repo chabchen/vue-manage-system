@@ -31,30 +31,30 @@
                         }}
                     },
 
-                    {app: 'filter/ConditionalSeaech', prop: { 
-                        config:{
-                            searchData:{
-                                beginDate:'',
-                                endDate:'',
-                                bigAreaName:'',
-                                bigAreas:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
-                                regionName:'',
-                                regions:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
-                                cityName:'',
-                                cities:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
-                                pasture:'',
-                                pastures:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
-                                diseaseType:'',
-                                diseaseTypes:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
-                                cowCategory:'', 
-                                cowCategorys:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
-                                fetusCategory:'',
-                                fetusCategorys:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
-                                lactationTimes:'',
-                                lactations:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }]
-                            }
-                            }
-                     }},
+                    // {app: 'filter/ConditionalSeaech', prop: { 
+                    //     config:{
+                    //         searchData:{
+                    //             beginDate:'',
+                    //             endDate:'',
+                    //             bigAreaName:'',
+                    //             bigAreas:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
+                    //             regionName:'',
+                    //             regions:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
+                    //             cityName:'',
+                    //             cities:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
+                    //             pasture:'',
+                    //             pastures:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
+                    //             diseaseType:'',
+                    //             diseaseTypes:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
+                    //             cowCategory:'', 
+                    //             cowCategorys:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
+                    //             fetusCategory:'',
+                    //             fetusCategorys:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }],
+                    //             lactationTimes:'',
+                    //             lactations:[{ value: '选项1', label: '黄金糕' }, { value: '选项2', label: '双皮奶' }]
+                    //         }
+                    //         }
+                    //  }},
                     {app: 'filter/filter-card', prop: {
                         config:{
                             items: {
@@ -188,7 +188,7 @@
                             }
                         }}
                     },
-                    {app: 'table/Table', prop: {
+                    {app: 'table/TableGrid', prop: {
                         config:{
                             items: [
                                 { prop: "date", label: "店铺" },
@@ -209,24 +209,56 @@
                             ],
                             items2: [
                                 { prop: "id", label: "事业部名称", event:true,type:"close"},
-                                { prop: "id2", label: "子品牌" , event:true,type:"open" },
+                                { prop: "id2", label: "子品牌" , event:false,type:"open" },
                             ],
-                            items3: [
-                                { prop: "id", label: "事业部名称", event:true,type:"close"},
-                                { prop: "id2", label: "子品牌" , event:true,type:"close"},
-                                { prop: "id3", label: "SKU" },
-                            ],
+                            // items3: [
+                            //     { prop: "id", label: "事业部名称", event:true,type:"close"},
+                            //     { prop: "id2", label: "子品牌" , event:true,type:"close"},
+                            //     { prop: "id3", label: "SKU" },
+                            // ],
                             items: [
                                 { prop: "name", label: "姓名" },
                                 { prop: "amount1", label: "数值" },
                                 { prop: "amount2", label: "数值" },
                                 { prop: "amount3", label: "数值" }
                             ],
-                            level:3,
+                            level:1,
                             rowSpanField:['id','id2'],
                             title: '流失奶站明细-大区视角'
                         }}
-                    }
+                    },
+                    {app: 'table/DynamicTable',prop:{
+                        config:{
+                            items1: [
+                                { prop: "id", label: "事业部名称", event:true,type:"open" },
+                            ],
+                            items2: [
+                                { prop: "id", label: "事业部名称", event:true,type:"close"},
+                                { prop: "id2", label: "子品牌" , event:false,type:"open" },
+                            ],
+                            // items3: [
+                            //     { prop: "id", label: "事业部名称", event:true,type:"close"},
+                            //     { prop: "id2", label: "子品牌" , event:true,type:"close"},
+                            //     { prop: "id3", label: "SKU" },
+                            // ],
+                            items: [
+                                { prop: "", label: "工厂"},
+                                { prop: "", label: "姓名",children:[
+                                    { prop: "amount1", label: "数值1" },
+                                    { prop: "amount2", label: "数值2" },
+                                    { prop: "amount3", label: "数值3" }
+                                ] },
+                                { prop: "", label: "性别",children:[
+                                    { prop: "amount1", label: "数值1" },
+                                    { prop: "amount2", label: "数值2" },
+                                    { prop: "amount3", label: "数值3" }
+                                ] },
+                            ],
+                            level:1,
+                            rowSpanField:['id','id2'],
+                            title: '流失奶站明细-大区视角'
+                        }}
+                    },
                 ]
             }
         },
