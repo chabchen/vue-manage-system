@@ -60,7 +60,7 @@
         display: inline-block;
         position: relative;
         top:15px;
-        margin-left: 30px
+        margin-left: 23px;
     }
     .radio-title{
         margin-bottom: 13px
