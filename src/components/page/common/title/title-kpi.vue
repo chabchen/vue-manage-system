@@ -102,11 +102,12 @@
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
+                let param = this.getParams(params);
+                debugger
                 if(this.sqlFlag){
                     sql = this.sql2;
                 }
                 if(!sql || !this.url){return;} 
-                let param = this.getParams(params);
                 this.$requestData(this.url, 'post', { params: sql + param }).then(res => {
                     this.data = res.datas;
                 });
