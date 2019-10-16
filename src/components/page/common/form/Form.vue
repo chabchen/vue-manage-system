@@ -39,6 +39,7 @@
                 style: "",
                 item1Style: {},
                 item2Style: {},
+                flag: false,
             }
         },
         computed: {
@@ -67,6 +68,7 @@
             this.showFrom = this.prop.config.showFrom;
             this.exclude = this.prop.config.exclude;
             this.style = this.prop.config.style;
+            this.flag = this.prop.config.flag;
             if (this.prop.config.items2) {
                 this.formLabel = this.prop.config.items2;
             }
@@ -113,6 +115,19 @@
                         if (this.exclude && this.exclude.indexOf(obj.tableField) > -1) { continue; }
                         sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
                     }
+                }
+                if(this.flag){
+                    let tableField = "";
+                    for (let obj of params.searchSelect) {
+                        tableField += obj.tableField + ",";
+                        if (!obj.value && obj.tableField.indexOf("biz_unit") > -1) { 
+                            sql += " " + obj.type + " " + obj.tableField + " = 'all'";
+                         }
+                    }
+                    if(tableField.indexOf("biz_unit") == -1){
+                        sql += " and pfi.biz_unit = 'all'";
+                    }
+                    console.log(sql)
                 }
                 if (groupby) {
                     groupby = ' group by ' + groupby;

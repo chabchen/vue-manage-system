@@ -38,10 +38,12 @@
                 widthData: "25%",
                 data: "",
                 params: "",
+                url: "",
             }
         },
         created() {
             this.data = this.prop.config.items;
+            this.url = this.prop.config.url;
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
             }
@@ -67,14 +69,10 @@
                 for (let obj of params.searchSelect) {
                     if (!obj.value) { continue; }
                     if (obj.operation != 'in') {
-                        sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
+                        sql += " " + obj.type + " " + obj.tableField + obj.operation + "'" + obj.value + "'";
                     }
-                }
-                if (groupby) {
-                    groupby = ' group by ' + groupby;
-                    sql += groupby;
-                }
-                this.$requestData('/report/list', 'post', { params: sql }).then(res => {
+                }                
+                this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.data = res.datas;
                 });
             },

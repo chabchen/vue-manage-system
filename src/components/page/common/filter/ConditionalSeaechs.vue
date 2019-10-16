@@ -57,19 +57,17 @@
         methods: {
             initFilterData: async function () {
                 for (let obj of this.searchData.searchSelect) {
-                    let url = obj.sourceType == 'presto' ? '/report/list' : '/report/kylinList';
-                    if (obj.sql) {
-                        await requestData(url, 'post', { params: obj.sql }).then(res => {
-                            if (!res.datas || !res.datas.length) { return; }
-                            let options = [];
-                            for (let data of res.datas) {
-                                if (!data.VAL) { continue; }
-                                options.push({label:data.VAL,value:data.VAL});
-                            }
-                            obj.options = options;
-                            if (obj.value.length) { obj.value = res.datas[0].VAL; }
-                        });
-                    }
+                    if (!obj.sql) {continue;}
+                    await requestData(obj.url, 'post', { params: obj.sql }).then(res => {
+                        if (!res.datas || !res.datas.length) { return; }
+                        let options = [];
+                        for (let data of res.datas) {
+                            if (!data.VAL) { continue; }
+                            options.push({label:data.VAL,value:data.VAL});
+                        }
+                        obj.options = options;
+                        if (obj.value.length) { obj.value = res.datas[0].VAL; }
+                    });
                 }
                 //通过懒加载加载组件
                 this.data = this.searchData.searchSelect;
