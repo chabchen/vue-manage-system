@@ -68,7 +68,7 @@
                 if(params.searchSelect){
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
-                        
+
                         if (obj.type && obj.operation != 'in') {
                             param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
@@ -85,6 +85,11 @@
                                 param += " (" + inValue + ")";
                             }                   
                         }
+                        //多sql情况下根据筛选器选择对应的sql
+                        if(obj.tableField == "sqlFlag"){
+                            //酸奶调拨【吨|件】切换
+                            this.sqlFlag = obj.value == "sql2" ? true : false;
+                        }
                     }
                 }
 
@@ -96,8 +101,10 @@
                 return param;             
             },
             loadReportData(params) {
-                console.log(params);
                 let sql = this.prop.sqls;
+                if(this.sqlFlag){
+                    sql = this.sql2;
+                }
                 if(!sql || !this.url){return;} 
                 let param = this.getParams(params);
                 this.$requestData(this.url, 'post', { params: sql + param }).then(res => {
