@@ -71,7 +71,8 @@
                     if (obj.operation != 'in') {
                         sql += " " + obj.type + " " + obj.tableField + obj.operation + "'" + obj.value + "'";
                     }
-                }                
+                }
+                if(!sql || !obj.url){return;}                
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.data = res.datas;
                 });

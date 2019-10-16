@@ -57,7 +57,7 @@
         methods: {
             initFilterData: async function () {
                 for (let obj of this.searchData.searchSelect) {
-                    if (!obj.sql) {continue;}
+                    if (!obj.sql||obj.url) {continue;}
                     await requestData(obj.url, 'post', { params: obj.sql }).then(res => {
                         if (!res.datas || !res.datas.length) { return; }
                         let options = [];
