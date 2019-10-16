@@ -32,13 +32,15 @@
                 items: [],
                 showButton: false,
                 buttonTitle: '查询',
+                url: "",
             }
         },
         created() {
-            console.log(this.prop);
             this.items = this.prop.config.items;
             this.showButton = this.prop.config.showButton;
             this.buttonTitle = this.prop.config.buttonTitle;
+            this.url = this.prop.config.url;
+            this.loadReportData(this.prop.params);
         },
         computed: {
             changeParams() {
@@ -49,15 +51,42 @@
             changeParams(newValue) {
                 if (!newValue) { return; }
                 this.params = newValue;
-                console.log(newValue);
-                //this.loadReportData(newValue);
+                this.loadReportData(newValue);
                 this.prop.params = "";
             }
         },
         methods: {
             searchEvent() {
 
-            }
+            },
+            loadReportData(params) {
+                if(!params || !params.searchSelect || !params.searchSelect.length){return;}
+                let sql = this.prop.sqls;
+                if(!sql || !this.url){return;} 
+                for (let obj of params.searchSelect) {
+                    if (!obj.value || !obj.value.length) { continue; }
+                    if (obj.operation != 'in') {
+                       sql += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                    }
+                    if(obj.operation == 'in'){
+                        if(!obj.value.length && !Array.isArray(obj.value)){continue;}
+                        sql += " " + obj.type + " " + obj.tableField + " " + obj.operation;
+                        let inValue = "";
+                        for(let value of obj.value){
+                            if(!value){continue;}
+                            inValue += "'" + value + "',";
+                        }
+                        inValue = inValue.substring(0,inValue.length-1);
+                        if(inValue){
+                            sql += " (" + inValue + ")";
+                        }                   
+                    }
+                }
+                               
+                this.$requestData(this.url, 'post', { params: sql }).then(res => {
+                    this.data = res.datas;
+                });
+            },
         }
     }
 </script>
