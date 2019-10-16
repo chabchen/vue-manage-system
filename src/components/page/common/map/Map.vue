@@ -289,9 +289,10 @@
                     let _this = this;
                     if (!this.expanded) { return; }
 
-                    this.myChart.on("dblclick", function (param) {
-                        _this.back(this.chinaId);
-                    });
+                    // this.myChart.on("dblclick", function (param) {
+                    //     _this.back(this.chinaId);
+                    // });
+                    
                     if(!this.initOnEvent){return;}
                     this.initOnEvent = false;
                     this.myChart.on("click", function (param) {

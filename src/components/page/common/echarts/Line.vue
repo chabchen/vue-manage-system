@@ -112,7 +112,14 @@
     }
 
     .line-select {
-        float: right;
+
+
+
+
+
+
+
+
         margin-right: 15px;
     }
 

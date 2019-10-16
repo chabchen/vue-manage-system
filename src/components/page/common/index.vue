@@ -41,6 +41,7 @@
                 }       
             },
             parentSearchEvent(datas){
+                console.log(datas);
                for(let data of this.comps){
                     data.prop.params = datas;
                }

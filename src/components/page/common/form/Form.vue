@@ -87,7 +87,7 @@
         methods: {
             initData() {
                 for (let obj of this.formLabel) {
-                    this.initFormData[obj.value] = 0;
+                    this.initFormData[obj.value] = "";
                 }
             },
             loadReportData(params) {

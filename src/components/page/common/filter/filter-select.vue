@@ -38,7 +38,8 @@
             this.initOptionArr(this.selectData.options);
         },
         methods: {
-            initOptionArr(data) {
+            initOptionArr(datas) {
+                let data = datas ? datas : this.selectData.options;
                 this.selectData.optionArr = [];
                 for (let item of data) {
                     let obj = {};
@@ -74,6 +75,9 @@
             }
         },
         computed: {
+            changeSelectData() {
+                return this.prop;
+            },
             changeValue() {
                 return this.selectData.value;
             },
@@ -82,6 +86,9 @@
             }
         },
         watch: {
+            changeSelectData(val){
+               console.log(val);
+            },
             changeValue(val) {
                 if (!val.length) { this.selectData.checkboxValue = false; return; }
                 if (!val[0]) { this.selectData.value = [] }

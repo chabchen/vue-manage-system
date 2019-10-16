@@ -10,7 +10,7 @@
                         <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable = "col2.sortable"/>
                     </template>    
                 </el-table-column>
-                <el-table-column v-else  :key="index" :prop="col.prop" :label="col.label" :sortable = "col.sortable" :span-method="columnSpanMethod">    
+                <el-table-column v-else  :key="index" :prop="col.prop" :label="col.label" :sortable = "col.sortable">    
                     <template slot="header" slot-scope="scope">
                         {{col.label}}
                         <el-row v-show="col.event" style="float: right;line-height:0;">
@@ -295,7 +295,6 @@
             loadTableHead(level) {//动态加载表头
                 let tableColumn = this.prop.config['items' + level];
                 this.tableColumns = tableColumn.concat(this.prop.config.items);
-                console.log(this.tableColumns);
                 this.title = this.prop.config.title;
                 this.level = level;
                 this.tableData = this['tableData' + level];
@@ -320,9 +319,6 @@
                 if (index == 0 && type == 'open') {
                     this.loadTableHead(2);
                 }
-            },
-            columnSpanMethod(row, column, rowIndex, columnIndex){
-                console.log(columnIndex);
             },
             objectSpanMethod({ row, column, rowIndex, columnIndex }) {//动态合并行
                 if (row.level > 1 && columnIndex === 0) {
@@ -392,6 +388,9 @@
     }
     .max_height_390{
         max-height: 390px;
-        overflow:  auto;
+    }
+    .el-table{
+        position: unset !important;
+        overflow: auto !important;
     }
 </style>

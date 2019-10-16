@@ -55,6 +55,7 @@
             changeParams(newValue) {
                 if(!newValue){return;}
                 this.params = newValue;
+                console.log(newValue);
                 //this.loadReportData(newValue);
                 this.prop.params = "";
             }

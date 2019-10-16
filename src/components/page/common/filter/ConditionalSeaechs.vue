@@ -1,18 +1,19 @@
 <template>
-    <div class="inline_block">
+    <div class="inline_block" :style="{width:searchData.conditionWidth}">
         <div class="inline_block ml_25" v-for="(ieo,index) in searchData.searchDate" :key="index">
             <div class="grid-content bg-purple" v-if="ieo.dataShow">
                 <div class="block">
                     <div class="demonstration">{{ieo.title}}</div>
-                    <el-date-picker class="wd_150" v-model="ieo.beginDate" :type='ieo.dateType' placeholder="选择日期" />
+                    <el-date-picker class="wd_150" v-model="ieo.beginDate" :type='ieo.dateType' :value-format="ieo.valueFormat" placeholder="选择日期"
+                    />
                 </div>
             </div>
         </div>
-        <div class="inline_block ml_25" v-for="(item,index) in searchData.searchSelect" :key="index+10">
+        <div class="inline_block ml_25" v-for="(item,index) in data" :key="index+10">
             <div class="grid-content bg-purple" v-if="item.dataShow">
                 <div class="block">
                     <div class="demonstration">{{item.title}}</div>
-                    <filterSelect class="wd_150" :prop="{searchDatas:searchData.searchSelect,data:item}" />
+                    <async-load-comp :app="appUrl" :prop="{searchDatas:searchData.searchSelect,data:item}"/>
                 </div>
             </div>
         </div>
@@ -24,13 +25,16 @@
 
 <script>
     import filterSelect from './filter-select.vue'
+    import asyncLoadComp from '../asyncLoadComp.vue'
     import { requestData } from '@/api/RequestData';
     export default {
-        components: { filterSelect },
+        components: { asyncLoadComp },
         props: { prop: Object },
         data() {
             return {
+                appUrl: "",
                 searchData: {},
+                data: [],
                 params: ""
             }
         },
@@ -48,25 +52,41 @@
         },
         created() {
             this.searchData = this.prop.config.searchData;
-            //this.initFilterData();
+            this.initFilterData();
         },
         methods: {
             initFilterData: async function () {
                 for (let obj of this.searchData.searchSelect) {
-                    if (obj.sourceType && obj.sourceType == "presto" && obj.sql) {
-                        await requestData('/report/list', 'post', { params: obj.sql }).then(res => {
+                    let url = obj.sourceType == 'presto' ? '/report/list' : '/report/kylinList';
+                    if (obj.sql) {
+                        await requestData(url, 'post', { params: obj.sql }).then(res => {
                             if (!res.datas || !res.datas.length) { return; }
-                            obj.options = res.datas;
-                            if (obj.value) { obj.value = res.datas[0].value; }
+                            let options = [];
+                            for (let data of res.datas) {
+                                if (!data.VAL) { continue; }
+                                options.push({label:data.VAL,value:data.VAL});
+                            }
+                            obj.options = options;
+                            if (obj.value.length) { obj.value = res.datas[0].VAL; }
                         });
                     }
                 }
+                //通过懒加载加载组件
+                this.data = this.searchData.searchSelect;
+                this.appUrl = "filter/filter-select";
                 this.searchEvent();
             },
             searchEvent() {
                 let param = {};
+                let searchSelect = this.concatParams(this.searchData.searchSelect, this.params.searchSelect);
+                let searchDate = this.concatParams(this.searchData.searchDate, this.params.searchDate);
+                param.searchSelect = searchSelect;
+                param.searchDate = searchDate;
+                this.$parent.$parent.parentSearchEvent(param);
+            },
+            concatParams(sourceParams, targetParams) {
                 let concatArr = [];
-                concatArr = this.searchData.searchSelect.concat(this.params.searchSelect ? this.params.searchSelect : []);
+                concatArr = sourceParams.concat(targetParams ? targetParams : []);
                 let temp = {};   //用于tableField判断重复
                 let result = [];  //最后的新数组
                 concatArr.map(function (item, index) {
@@ -75,12 +95,7 @@
                         temp[item.tableField] = true;
                     }
                 });
-                param.searchSelect = result;
-                if (this.params.markPointName) {
-                    param.markPointName = this.params.markPointName;
-                }
-                console.log(param);
-                this.$parent.$parent.parentSearchEvent(param);
+                return result;
             }
         }
     }
