@@ -75,9 +75,6 @@
             }
         },
         computed: {
-            changeSelectData() {
-                return this.prop;
-            },
             changeValue() {
                 return this.selectData.value;
             },
@@ -86,9 +83,6 @@
             }
         },
         watch: {
-            changeSelectData(val){
-               console.log(val);
-            },
             changeValue(val) {
                 if (!val.length) { this.selectData.checkboxValue = false; return; }
                 if (!val[0]) { this.selectData.value = [] }

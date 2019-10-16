@@ -4,7 +4,7 @@
             <div class="grid-content bg-purple" v-if="ieo.dataShow">
                 <div class="block">
                     <div class="demonstration">{{ieo.title}}</div>
-                    <el-date-picker class="wd_150" v-model="ieo.beginDate" :type='ieo.dateType' :value-format="ieo.valueFormat" placeholder="选择日期"
+                    <el-date-picker class="wd_150" v-model="ieo.value" :type='ieo.dateType' :value-format="ieo.valueFormat" placeholder="选择日期"
                     />
                 </div>
             </div>
@@ -57,7 +57,10 @@
         methods: {
             initFilterData: async function () {
                 for (let obj of this.searchData.searchSelect) {
-                    if (!obj.sql || !obj.url) {continue;}
+                    if (!obj.sql || !obj.url) {
+                        if (obj.value && obj.options.length) { obj.value = obj.options[0].value;}
+                        continue;
+                    }
                     await requestData(obj.url, 'post', { params: obj.sql }).then(res => {
                         if (!res.datas || !res.datas.length) { return; }
                         let options = [];

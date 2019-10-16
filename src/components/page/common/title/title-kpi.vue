@@ -33,12 +33,15 @@
                 showButton: false,
                 buttonTitle: '查询',
                 url: "",
+                sqlFlag: false,
+                sql2: "",
             }
         },
         created() {
             this.items = this.prop.config.items;
             this.showButton = this.prop.config.showButton;
             this.buttonTitle = this.prop.config.buttonTitle;
+            this.sql2 = this.prop.config.sql2;
             this.url = this.prop.config.url;
             this.loadReportData(this.prop.params);
         },
@@ -59,31 +62,45 @@
             searchEvent() {
 
             },
-            loadReportData(params) {
-                if(!params || !params.searchSelect || !params.searchSelect.length){return;}
-                let sql = this.prop.sqls;
-                if(!sql || !this.url){return;} 
-                for (let obj of params.searchSelect) {
-                    if (!obj.value || !obj.value.length) { continue; }
-                    if (obj.operation != 'in') {
-                       sql += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
-                    }
-                    if(obj.operation == 'in'){
-                        if(!obj.value.length && !Array.isArray(obj.value)){continue;}
-                        sql += " " + obj.type + " " + obj.tableField + " " + obj.operation;
-                        let inValue = "";
-                        for(let value of obj.value){
-                            if(!value){continue;}
-                            inValue += "'" + value + "',";
+            getParams(params){
+                if(!params || (!params.searchSelect && !params.searchDate)){return "";}
+                let param = "";
+                if(params.searchSelect){
+                    for (let obj of params.searchSelect) {
+                        if (!obj.value || !obj.value.length) { continue; }
+                        
+                        if (obj.type && obj.operation != 'in') {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
-                        inValue = inValue.substring(0,inValue.length-1);
-                        if(inValue){
-                            sql += " (" + inValue + ")";
-                        }                   
+                        if(obj.type && obj.operation == 'in'){
+                            if(!obj.value.length && !Array.isArray(obj.value)){continue;}
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
+                            let inValue = "";
+                            for(let value of obj.value){
+                                if(!value){continue;}
+                                inValue += "'" + value + "',";
+                            }
+                            inValue = inValue.substring(0,inValue.length-1);
+                            if(inValue){
+                                param += " (" + inValue + ")";
+                            }                   
+                        }
                     }
                 }
-                               
-                this.$requestData(this.url, 'post', { params: sql }).then(res => {
+
+                if(!params.searchDate){ return param}
+                for (let obj of params.searchDate) {
+                    if (!obj.value) { continue; }
+                    param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                }
+                return param;             
+            },
+            loadReportData(params) {
+                console.log(params);
+                let sql = this.prop.sqls;
+                if(!sql || !this.url){return;} 
+                let param = this.getParams(params);
+                this.$requestData(this.url, 'post', { params: sql + param }).then(res => {
                     this.data = res.datas;
                 });
             },
