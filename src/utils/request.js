@@ -4,8 +4,8 @@ window.config = {
     baseURL:"http://10.60.138.84:8081/yili2/api",
     //baseURL:"http://127.0.0.1:8088/api",
     //baseURL:"/gmv/api",
-    //baseURL: "/yili2/api",
-    //mapUrl: "/yili2/json/map/",
+    // baseURL: "/yili2/api",
+    // mapUrl: "/yili2/json/map/",
     mapUrl: "/json/map/",
     //mapUrl: "/gmv/json/map/"
 }

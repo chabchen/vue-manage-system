@@ -23,8 +23,6 @@
     </div>
 </template>
 <script>
-
-
     export default {
         props: { prop: Object },
         data() {
@@ -60,7 +58,6 @@
         },
         methods: {
             searchEvent() {
-
             },
             getParams(params){
                 if(!params || (!params.searchSelect && !params.searchDate)){return "";}
@@ -68,7 +65,6 @@
                 if(params.searchSelect){
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
-
                         if (obj.type && obj.operation != 'in') {
                             param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
@@ -83,7 +79,7 @@
                             inValue = inValue.substring(0,inValue.length-1);
                             if(inValue){
                                 param += " (" + inValue + ")";
-                            }                   
+                            }
                         }
                         //多sql情况下根据筛选器选择对应的sql
                         if(obj.tableField == "sqlFlag"){
@@ -92,24 +88,26 @@
                         }
                     }
                 }
-
                 if(!params.searchDate){ return param}
                 for (let obj of params.searchDate) {
                     if (!obj.value) { continue; }
                     param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                 }
-                return param;             
+                return param;
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
                 let param = this.getParams(params);
-                debugger
                 if(this.sqlFlag){
                     sql = this.sql2;
                 }
-                if(!sql || !this.url){return;} 
+                if(!sql || !this.url){return;}
                 this.$requestData(this.url, 'post', { params: sql + param }).then(res => {
-                    this.data = res.datas;
+                    if (!res.datas[0]) { return; }
+                    let params = this.prop.config.items
+                    for(let i=0;i<params.length;i++){
+                        this.items[i].value = res.datas[0][params[i].filedName]
+                    }
                 });
             },
         }
@@ -121,7 +119,6 @@
         display: flex;
         flex-direction: row;
     }
-
     .kpi_list .kpi_item {
         display: flex;
         flex-direction: column;
@@ -138,15 +135,12 @@
         text-align: center;
         min-height: 74px;
     }
-
     .kpi_list .kpi_item .item-compare {
         display: flex;
         flex-direction: row;
         flex: 1;
         align-items: center;
     }
-
-
     .kpi_list .kpi_item .kpi_content {
         color: #888;
         font-weight: 700;
@@ -154,7 +148,6 @@
         font-size: 20px;
         margin-left: 5px;
     }
-
     .pro_kpi_title {
         font-size: 14px;
         white-space: nowrap;

@@ -28,6 +28,8 @@
                 chartSettings: {},
                 widthData: '50%',
                 params: '',
+                sqlFlag: false,
+                url: ''
             }
         },
         created() {
@@ -36,9 +38,12 @@
             this.chartData = this.prop.config.chartData;
             this.chartExtend = this.prop.config.chartExtend;
             this.chartSettings = this.prop.config.chartSettings;
+            this.url = this.prop.config.url;
+            this.sql2 = this.prop.config.sql2;
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
             }
+            this.loadReportData(this.prop.params);
         },
         computed: {
             changeParams() {
@@ -49,26 +54,74 @@
             changeParams(newValue) {
                 if(!newValue){return;}
                 this.params = newValue;
-                //this.loadReportData(newValue);
+                this.loadReportData(newValue);
                 this.prop.params = "";
             }
         },
         methods: {
-
-            loadReportData(params) {
-                let sql = this.prop.sqls;
-                for (let obj of params.searchSelect) {
-                    if (!obj.value) { continue; }
-                    if (obj.operation != 'in') {
-                        sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
+            getParams(params){
+                if(!params || (!params.searchSelect && !params.searchDate)){return "";}
+                let param = "";
+                if(params.searchSelect){
+                    for (let obj of params.searchSelect) {
+                        if (!obj.value || !obj.value.length) { continue; }
+                        if (obj.type && obj.operation != 'in') {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        }
+                        if(obj.type && obj.operation == 'in'){
+                            if(!obj.value.length && !Array.isArray(obj.value)){continue;}
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
+                            let inValue = "";
+                            for(let value of obj.value){
+                                if(!value){continue;}
+                                inValue += "'" + value + "',";
+                            }
+                            inValue = inValue.substring(0,inValue.length-1);
+                            if(inValue){
+                                param += " (" + inValue + ")";
+                            }
+                        }
+                        //多sql情况下根据筛选器选择对应的sql
+                        if(obj.tableField == "sqlFlag"){
+                            //酸奶调拨【吨|件】切换
+                            this.sqlFlag = obj.value == "sql2" ? true : false;
+                        }
                     }
                 }
+                if(!params.searchDate){ return param}
+                for (let obj of params.searchDate) {
+                    if (!obj.value) { continue; }
+                    param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                }
+                return param;
+            },
+            loadReportData(params) {
+                let sql = this.prop.sqls;
+                let groupby = sql.split("groupby")[1];
+                if (groupby) {
+                    sql = sql.split("groupby")[0];
+                }
+                let param = this.getParams(params);
+                if(this.sqlFlag && this.sql2){
+                    groupby = this.sql2.split("groupby")[1];
+                    sql = this.sql2.split("groupby")[0];
+                }
+                if(!sql || !this.url){return;}
                 if (groupby) {
                     groupby = ' group by ' + groupby;
-                    sql += groupby;
                 }
-                this.$requestData('/report/list', 'post', { params: sql }).then(res => {
-                    this.chartData = res.datas;
+                this.$requestData(this.url , 'post', { params: sql + param + groupby }).then(res => {
+                    //this.chartData = res.datas;
+                    if (!res.datas[0]) { return; }
+                    this.chartData.rows = []
+                    var filedArr = this.prop.config.selectData.filedArr
+                    var chartData = this.prop.config.chartData
+                    for(var i=0;i<res.datas.length;i++){
+                        chartData.rows[i] = {}
+                        for(var item in chartData.columns){
+                            chartData.rows[i][chartData.columns[item]] = res.datas[i][filedArr[item]]
+                        }
+                    }
                 });
             },
         }

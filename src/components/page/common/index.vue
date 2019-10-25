@@ -59,5 +59,6 @@
         visibility:hidden;
     }
     .container { 
-        zoom:1; }
+        zoom:1; 
+    }
 </style>

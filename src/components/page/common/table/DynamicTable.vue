@@ -3,7 +3,7 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" border>
+        <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border>
             <template v-for="(col, index) in tableColumns" >
                 <el-table-column v-if = "col.children" :prop="col.prop" :label="col.label" >
                     <template v-for="(col2,index2) in col.children">
@@ -32,6 +32,7 @@
                 params: '',
                 title:'',
                 widthData: '100%',
+                showSummary: false,
                 rowspanData: {},
                 level: 1,
                 tableColumns: [],
@@ -264,7 +265,7 @@
             changeParams(newValue) {
                 if(!newValue){return;}
                 this.params = newValue;
-                //this.loadReportData(newValue);
+                this.loadReportData(this.level);
                 this.prop.params = "";
             }
         },
@@ -272,25 +273,26 @@
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
             }
+            this.showSummary = this.prop.config.showSummary;
             this.loadTableHead(this.prop.config.level);
         },
         methods: {
 
-            loadReportData(params) {
+            loadReportData(level) {
                 let sql = this.prop.sqls;
-                for (let obj of params.searchSelect) {
-                    if (!obj.value) { continue; }
-                    if (obj.operation != 'in') {
-                        sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
-                    }
-                }
-                if (groupby) {
-                    groupby = ' group by ' + groupby;
-                    sql += groupby;
-                }
-                this.$requestData('/report/list', 'post', { params: sql }).then(res => {
-                    this.tableData = res.datas;
-                });
+                // for (let obj of params.searchSelect) {
+                //     if (!obj.value) { continue; }
+                //     if (obj.operation != 'in') {
+                //         sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
+                //     }
+                // }
+                // if (groupby) {
+                //     groupby = ' group by ' + groupby;
+                //     sql += groupby;
+                // }
+                // this.$requestData('/report/list', 'post', { params: sql }).then(res => {
+                //     this.tableData = res.datas;
+                // });
             },
             loadTableHead(level) {//动态加载表头
                 let tableColumn = this.prop.config['items' + level];
@@ -304,7 +306,7 @@
                     this.getSpanArr(this.tableData, 0, this.prop.config.rowSpanField[0]);
                     this.getSpanArr(this.tableData, 1, this.prop.config.rowSpanField[1]);
                 }
-
+                this.loadReportData(level);
             },
             changeNode(index, type) {//下钻加载数据
                 if (index == 1 && this.level == 3 && type == 'close') {
@@ -325,7 +327,6 @@
                     let _row = this.rowspanData['spanArr' + columnIndex][rowIndex];
                     let _col = _row > 0 ? 1 : 0;
                     return { rowspan: _row, colspan: _col };
-
                 }
                 if (row.level > 2 && columnIndex === 1) {
                     let _row = this.rowspanData['spanArr' + columnIndex][rowIndex];
