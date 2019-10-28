@@ -35,7 +35,11 @@
                 showSummary: false,
                 rowspanData: {},
                 level: 1,
+                url: "",
+                sqlFlag: false,
+                sql2: "",
                 tableColumns: [],
+                tableData: [],
                 tableData1: [{
                     id: '液态奶事业部',
                     name: '王小虎',
@@ -105,7 +109,6 @@
                         amount2: '4.43',
                         amount3: 12,
                         level: 2,
-
                     }, {
                         id: '奶粉事业部',
                         id2: '奶粉事业部--子品牌2',
@@ -241,7 +244,6 @@
                         amount2: '4.43',
                         amount3: 12,
                         level: 3,
-
                     }, {
                         id: '奶粉事业部',
                         id2: '奶粉事业部--子品牌2',
@@ -252,8 +254,7 @@
                         amount3: 12,
                         level: 3,
                     }
-                ],
-                
+                ]              
             };
         },
         computed: {
@@ -265,7 +266,7 @@
             changeParams(newValue) {
                 if(!newValue){return;}
                 this.params = newValue;
-                this.loadReportData(this.level);
+                this.loadTableHead(this.level);
                 this.prop.params = "";
             }
         },
@@ -274,27 +275,76 @@
                 this.widthData = this.prop.config.widthData;
             }
             this.showSummary = this.prop.config.showSummary;
+            this.sql2 = this.prop.config.sql2;
+            this.url = this.prop.config.url;
             this.loadTableHead(this.prop.config.level);
         },
         methods: {
-
+            getParams(params){
+                if(!params || (!params.searchSelect && !params.searchDate)){return "";}
+                let param = "";
+                if(params.searchSelect){
+                    for (let obj of params.searchSelect) {
+                        if (!obj.value || !obj.value.length) { continue; }
+                        if (obj.type && obj.operation != 'in') {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        }
+                        if(obj.type && obj.operation == 'in'){
+                            if(!obj.value.length && !Array.isArray(obj.value)){continue;}
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
+                            let inValue = "";
+                            for(let value of obj.value){
+                                if(!value){continue;}
+                                inValue += "'" + value + "',";
+                            }
+                            inValue = inValue.substring(0,inValue.length-1);
+                            if(inValue){
+                                param += " (" + inValue + ")";
+                            }
+                        }
+                        //多sql情况下根据筛选器选择对应的sql
+                        if(obj.tableField == "sqlFlag"){
+                            //酸奶调拨【吨|件】切换
+                            this.sqlFlag = obj.value == "sql2" ? true : false;
+                        }
+                    }
+                }
+                if(!params.searchDate){ return param}
+                for (let obj of params.searchDate) {
+                    if (!obj.value) { continue; }
+                    param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                }
+                return param;
+            },
             loadReportData(level) {
                 let sql = this.prop.sqls;
-                // for (let obj of params.searchSelect) {
-                //     if (!obj.value) { continue; }
-                //     if (obj.operation != 'in') {
-                //         sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
-                //     }
-                // }
-                // if (groupby) {
-                //     groupby = ' group by ' + groupby;
-                //     sql += groupby;
-                // }
-                // this.$requestData('/report/list', 'post', { params: sql }).then(res => {
-                //     this.tableData = res.datas;
-                // });
+                if(!sql || !this.params){return;}
+                let param = this.getParams(this.params);
+                if(this.sqlFlag){
+                    sql = this.sql2;
+                }
+                let groupby = sql.split("groupby")[1];
+                if (groupby) {
+                    sql = sql.split("groupby")[0];
+                }
+                if(param){sql += param;}
+
+                if (groupby) {
+                    groupby = ' group by ' + groupby;
+                    sql += groupby;
+                }
+                if(!sql || !this.url){return;}
+                this.$requestData(this.url, 'post', { params: sql}).then(res => {
+                    if(!res.datas){return;}
+                    for(let obj of res.datas){
+                        obj.level = level;
+                    }
+                    // this.tableData = res.datas; 
+                    // this.loadTableHead(level,true);
+                    console.log(res.datas);
+                });
             },
-            loadTableHead(level) {//动态加载表头
+            loadTableHead(level,flag) {//动态加载表头
                 let tableColumn = this.prop.config['items' + level];
                 this.tableColumns = tableColumn.concat(this.prop.config.items);
                 this.title = this.prop.config.title;
@@ -306,7 +356,9 @@
                     this.getSpanArr(this.tableData, 0, this.prop.config.rowSpanField[0]);
                     this.getSpanArr(this.tableData, 1, this.prop.config.rowSpanField[1]);
                 }
-                this.loadReportData(level);
+                if(!flag){
+                    this.loadReportData(level);
+                }                
             },
             changeNode(index, type) {//下钻加载数据
                 if (index == 1 && this.level == 3 && type == 'close') {

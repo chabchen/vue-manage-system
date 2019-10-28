@@ -80,14 +80,16 @@
         font-style: normal;
         font-size: 20px;
         letter-spacing: normal;
-        color: #333333;
+        /*color: #333333;*/
         vertical-align: none;
         line-height: 50px;
         text-transform: none;
-        background: #409eff;
-        color: #fff;
+        /*background: #409eff;*/
+        /*color: #fff;*/
         padding-left: 15px;
         margin: 10px 0 10px 0;
+        background: rgba(242, 242, 242, 1);
+        color: #333333;
     }
 
     .echart-ex1 {
@@ -112,14 +114,7 @@
     }
 
     .line-select {
-
-
-
-
-
-
-
-
+        float: right;
         margin-right: 15px;
     }
 

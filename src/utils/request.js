@@ -2,12 +2,12 @@ import axios from 'axios';
 
 window.config = {
     baseURL:"http://10.60.138.84:8081/yili2/api",
+    mapUrl: "/json/map/",
     //baseURL:"http://127.0.0.1:8088/api",
     //baseURL:"/gmv/api",
+    //mapUrl: "/gmv/json/map/",
     // baseURL: "/yili2/api",
-    // mapUrl: "/yili2/json/map/",
-    mapUrl: "/json/map/",
-    //mapUrl: "/gmv/json/map/"
+    // mapUrl: "/yili2/json/map/"
 }
 
 const service = axios.create({baseURL: window.config.baseURL,timeout: 50000})

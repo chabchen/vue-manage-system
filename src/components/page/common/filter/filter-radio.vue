@@ -36,16 +36,23 @@
             radioChange(val){
                 let param = {searchSelect:[]};
                 let filterArr = [];
+                let tableField = this.radioData.tableField;
+                let flag = false;
                 for (let obj of this.params.searchSelect) {//筛选器过滤
                     if (!obj.value) { continue; }
                     let item = {};
                     for(let field in obj){
                         item[field] = obj[field];
                     }
+                    if(item.tableField == tableField){
+                        item.value = val;
+                        flag = true;
+                    }
                     filterArr.push(item);
                 }
-                let tableField = this.radioData.tableField;
-                filterArr.push({ operation: "=", tableField: tableField, type: "and", value: val });
+                if(!flag){
+                    filterArr.push({tableField: tableField,value: val});
+                }
                 param.searchSelect = filterArr
                 this.$parent.$parent.parentSearchEvent(param);
             }

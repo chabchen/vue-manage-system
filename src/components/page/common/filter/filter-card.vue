@@ -1,5 +1,9 @@
 <template>
-    <div :style="{width:widthData}" class="wrapper" >
+    <div :style="{width:widthData,gridRow:'row-start 2 / row-end 3'}" class="wrapper" @click="routerTo">
+        <div class="title_style">
+            <span class="blue_span" v-if="data.card_title">  </span>
+            <span>&nbsp&nbsp{{data.card_title}}</span>
+        </div>
         <div class="wrap" style="height: 120px;">
             <div class="item" style="margin: auto">
                 <div class="c_title" style="text-align: center">
@@ -69,7 +73,7 @@
                 for (let obj of params.searchSelect) {
                     if (!obj.value) { continue; }
                     if (obj.operation != 'in') {
-                        sql += " " + obj.type + " " + obj.tableField + obj.operation + "'" + obj.value + "'";
+                        sql += " " + obj.type + " " + obj.tableField + obj.operation + "'" + obj.value + "' ";
                     }
                 }
                 if(!sql || !obj.url){return;}                
@@ -77,6 +81,10 @@
                     this.data = res.datas;
                 });
             },
+            routerTo(){
+                if(!this.prop.config.indexId){return;}
+                this.$router.push({ path: 'index', query: { reportId: this.prop.config.indexId } });
+            }
         }
     }
 </script>
@@ -109,5 +117,17 @@
     .bottom-span {
         line-height: 25px;
         margin: 0 5px
+    }
+    .title_style{
+        margin: 10px 0;
+    }
+    .blue_span{
+        display: inline-block;
+        background: #2d8cf0;
+        width: 4px;
+        height: 20px;
+    }
+    span{
+        vertical-align: middle;
     }
 </style>

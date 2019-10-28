@@ -41,7 +41,7 @@
             this.buttonTitle = this.prop.config.buttonTitle;
             this.sql2 = this.prop.config.sql2;
             this.url = this.prop.config.url;
-            this.loadReportData(this.prop.params);
+            //this.loadReportData(this.prop.params);
         },
         computed: {
             changeParams() {
@@ -96,6 +96,7 @@
                 return param;
             },
             loadReportData(params) {
+                let count = 0
                 let sql = this.prop.sqls;
                 let param = this.getParams(params);
                 if(this.sqlFlag){
@@ -104,9 +105,15 @@
                 if(!sql || !this.url){return;}
                 this.$requestData(this.url, 'post', { params: sql + param }).then(res => {
                     if (!res.datas[0]) { return; }
-                    let params = this.prop.config.items
-                    for(let i=0;i<params.length;i++){
-                        this.items[i].value = res.datas[0][params[i].filedName]
+                    var params = this.prop.config.items
+                    for(let i in params){
+                        if(this.items[i].children){
+                            this.items[i].children[count].value = res.datas[0][params[i].filedName]
+                            count++
+                            if(count>=this.items[i].children.length){count=0}
+                        }else{
+                            this.items[i].value = res.datas[0][params[i].filedName]
+                        }
                     }
                 });
             },

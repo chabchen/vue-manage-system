@@ -49,6 +49,7 @@ export function getComponents() {
         { label: '表单1', value: 'form/Form' },
         { label: '表格1', value: 'table/TableGrid' },
         { label: '三级下钻表格', value: 'table/DynamicTable' },
+        { label: '三级下钻表格2', value: 'table/DynamicTable2' },
         { label: 'KPI指标', value: 'title/title-kpi' },
         { label: '地图', value: 'map/Map' },
         { label: '地图-散点', value: 'map/MapGeo' },

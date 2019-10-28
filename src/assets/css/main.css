@@ -59,7 +59,10 @@ a {
 .el-table th {
     background-color: #f5f7fa !important;
 }
-
+/* 去掉table最后空的一列 */
+.has-gutter .gutter {
+    display: block !important;
+}
 .pagination {
     margin: 20px 0;
     text-align: right;

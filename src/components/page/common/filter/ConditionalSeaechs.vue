@@ -4,7 +4,8 @@
             <div class="grid-content bg-purple" v-if="ieo.dataShow">
                 <div class="block">
                     <div class="demonstration">{{ieo.title}}</div>
-                    <el-date-picker class="wd_150" v-model="ieo.value" :type='ieo.dateType' :value-format="ieo.valueFormat" placeholder="选择日期"
+                    <el-date-picker class="rangeDate" v-model="ieo.value" :type="ieo.dateType" :format="ieo.showFormat" :value-format="ieo.valueFormat"
+                        range-separator="至" start-placeholder="开始" end-placeholder="结束" placeholder="选择日期" :style="{width:ieo.dateType == 'date' || ieo.dateType == 'month' ? '158px' : '220px' }"
                     />
                 </div>
             </div>
@@ -13,10 +14,11 @@
             <div class="grid-content bg-purple" v-if="item.dataShow">
                 <div class="block">
                     <div class="demonstration">{{item.title}}</div>
-                    <async-load-comp :app="appUrl" :prop="{searchDatas:searchData.searchSelect,data:item}"/>
+                    <async-load-comp :app="appUrl" :prop="{searchDatas:searchData.searchSelect,data:item}" />
                 </div>
             </div>
         </div>
+        <div class="inline_block" :style="{width:searchData.divWidth}"></div>
         <div class="inline_block select_posion" v-if="!searchData.hideSearchBtn">
             <el-button class="ax-search" type="primary" @click="searchEvent" icon="el-icon-search">查询</el-button>
         </div>
@@ -35,7 +37,8 @@
                 appUrl: "",
                 searchData: {},
                 data: [],
-                params: ""
+                params: "",
+                radioFlag: false,
             }
         },
         computed: {
@@ -47,6 +50,7 @@
             changeParams(newValue) {
                 if (!newValue) { return; }
                 this.params = newValue;
+                this.changeRadio(newValue)
                 this.prop.params = "";
             }
         },
@@ -55,10 +59,37 @@
             this.initFilterData();
         },
         methods: {
+            //切换维度触发方法
+            changeRadio(newValue) {
+                for (let obj of newValue.searchSelect) {
+                    if (obj.tableField != "reportType") { continue; }
+                    if (obj.value == "月报") {
+                        for (let item of this.searchData.searchDate) {
+                            item.dateType = item.dateType == 'date' ? 'month' : 'monthrange';
+                            item.showFormat = 'yyyy-MM'
+                            item.valueFormat = 'yyyyMM'
+                        }
+                    }
+                    if (obj.value == "日报") {
+                        for (let item of this.searchData.searchDate) {
+                            item.dateType = item.dateType == 'month' ? 'date' : 'daterange';
+                            item.showFormat = 'yyyy-MM-dd'
+                            item.valueFormat = 'yyyyMMdd'
+                        }
+                    }
+                    if (obj.value == "年报") {
+                        for (let item of this.searchData.searchDate) {
+                            item.dateType = 'year';
+                            item.showFormat = 'yyyy'
+                            item.valueFormat = 'yyyy'
+                        }
+                    }
+                }
+            },
             initFilterData: async function () {
                 for (let obj of this.searchData.searchSelect) {
                     if (!obj.sql || !obj.url) {
-                        if (obj.value && obj.options.length) { obj.value = obj.options[0].value;}
+                        if (obj.value && obj.options.length) { obj.value = obj.options[0].value; }
                         continue;
                     }
                     await requestData(obj.url, 'post', { params: obj.sql }).then(res => {
@@ -66,12 +97,13 @@
                         let options = [];
                         for (let data of res.datas) {
                             if (!data.VAL) { continue; }
-                            options.push({label:data.VAL,value:data.VAL});
+                            options.push({ label: data.VAL, value: data.VAL });
                         }
                         obj.options = options;
                         if (obj.value.length) { obj.value = res.datas[0].VAL; }
                     });
                 }
+                this.initDate();
                 //通过懒加载加载组件
                 this.data = this.searchData.searchSelect;
                 this.appUrl = "filter/filter-select";
@@ -97,11 +129,29 @@
                     }
                 });
                 return result;
-            }
+            },
+            //初始化设置时间
+            initDate() {
+                let now = new Date();
+                let nowYear = now.getMonth() == 0 ? now.getFullYear() - 1 : now.getFullYear();
+                for (let obj of this.searchData.searchDate) {
+                    if (obj.dateType == "date") {
+                        let nowMonth = now.getMonth() + 1;
+                        let nowDay = new Date(now.getTime() - 86400000).getDate();//减去一天获取前一天日期
+                        nowMonth = nowMonth.length == 1 ? '0'+nowMonth : nowMonth;
+                        nowDay = nowDay.length == 1 ? '0'+nowDay : nowDay;
+                        obj.value = nowYear + "" + nowMonth+""+nowDay;
+                    }
+                    if (obj.dateType == "month") {
+                        let nowMonth = now.getMonth() == 0 ? 12 : now.getMonth();
+                        nowYear = now.getMonth() == 0 ? nowYear -1 : nowYear;
+                        nowMonth = nowMonth.length == 1 ? '0'+nowMonth : nowMonth;
+                        obj.value = nowYear + "" + nowMonth;
+                    }
+                }
+            },
         }
     }
-
-
 </script>
 <style scoped>
     .el-row {
@@ -144,8 +194,12 @@
 
     }
 
-    .wd_150 {
-        width: 158px !important;
+    .rangeDate {
+        height: 28px !important;
+    }
+
+    .el-range-editor.el-input__inner {
+        padding: 0.1px;
     }
 
     .el-input--small .el-input__inner {

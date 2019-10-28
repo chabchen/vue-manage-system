@@ -43,7 +43,7 @@
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
             }
-            this.loadReportData(this.prop.params);
+            //this.loadReportData(this.prop.params);
         },
         computed: {
             changeParams() {
@@ -97,28 +97,29 @@
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
-                let groupby = sql.split("groupby")[1];
-                if (groupby) {
-                    sql = sql.split("groupby")[0];
-                }
                 let param = this.getParams(params);
+                let groupby = '';
+                //判断单位为吨还是件
                 if(this.sqlFlag && this.sql2){
                     groupby = this.sql2.split("groupby")[1];
                     sql = this.sql2.split("groupby")[0];
+                }else{
+                    groupby = sql.split("groupby")[1]
+                    sql = sql.split("groupby")[0];
+                }
+                //判断是否存在groupby
+                if (groupby) {
+                    groupby = ' group by' + groupby;
                 }
                 if(!sql || !this.url){return;}
-                if (groupby) {
-                    groupby = ' group by ' + groupby;
-                }
                 this.$requestData(this.url , 'post', { params: sql + param + groupby }).then(res => {
-                    //this.chartData = res.datas;
                     if (!res.datas[0]) { return; }
                     this.chartData.rows = []
-                    var filedArr = this.prop.config.selectData.filedArr
-                    var chartData = this.prop.config.chartData
-                    for(var i=0;i<res.datas.length;i++){
+                    let filedArr = this.prop.config.selectData.filedArr
+                    let chartData = this.prop.config.chartData
+                    for(let i=0;i<res.datas.length;i++){
                         chartData.rows[i] = {}
-                        for(var item in chartData.columns){
+                        for(let item in chartData.columns){
                             chartData.rows[i][chartData.columns[item]] = res.datas[i][filedArr[item]]
                         }
                     }
@@ -133,13 +134,13 @@
         width: 99.6%;
         margin: 2% auto;
         border-width: 0px;
-        height: 440px;
+        height: 500px;
         background: inherit;
         background-color: rgba(255, 255, 255, 1);
         border: none;
         border-radius: 0px;
-        -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
-        -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
+        /*-moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);*/
+        /*-webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);*/
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-sizing: border-box;
     }
@@ -154,8 +155,9 @@
         vertical-align: none;
         line-height: 50px;
         text-transform: none;
-        background: #409eff;
-        color: #fff;
+        /*background: #409eff;*/
+        background: rgba(242, 242, 242, 1);
+        color: #333333;
         padding-left: 15px;
         margin: 10px 0 10px 0;
     }

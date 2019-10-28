@@ -1,5 +1,5 @@
 <template>
-    <el-select v-model="selectData.value" :multiple="selectData.multiple" filterable :clearable = "selectData.clearable" collapse-tags placeholder="请选择">
+    <el-select class="select_style" v-model="selectData.value" :multiple="selectData.multiple" filterable :clearable = "selectData.clearable" collapse-tags placeholder="请选择">
         <template v-if="selectData.multiple">
             <el-input style="width: 90%;margin-left: 5%" v-model="selectData.searchValue" placeholder="请输入搜索内容"></el-input>
             <el-row>
@@ -75,6 +75,9 @@
             }
         },
         computed: {
+            changeSelectData() {
+                return this.prop;
+            },
             changeValue() {
                 return this.selectData.value;
             },
@@ -83,6 +86,9 @@
             }
         },
         watch: {
+            changeSelectData(val){
+                console.log(val);
+            },
             changeValue(val) {
                 if (!val.length) { this.selectData.checkboxValue = false; return; }
                 if (!val[0]) { this.selectData.value = [] }
@@ -136,5 +142,9 @@
     .el-input--small .el-input__inner {
         height: 28px;
         line-height: 28px;
+    }
+    .select_style{
+        width: 158px;
+        height: 28px;
     }
 </style>
