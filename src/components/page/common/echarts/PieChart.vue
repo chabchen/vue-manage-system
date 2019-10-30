@@ -27,20 +27,14 @@
             return {
                 loading: true,
                 selectData: {},
-                params: "",
                 widthData: '50%',
-                chartData: {
-                    columns: ['日期', '访问用户'],
-                    rows: [
-                        { '日期': '1/1', '访问用户': 1393 },
-                        { '日期': '1/2', '访问用户': 3530 },
-                        { '日期': '1/3', '访问用户': 2923 },
-                        { '日期': '1/4', '访问用户': 1723 },
-                        { '日期': '1/5', '访问用户': 3792 },
-                        { '日期': '1/6', '访问用户': 4593 }
-                    ]
-                },
+                chartData: {},
                 chartSettings: {},
+                params: "",
+                url: "",
+                reportType: "dayReport",
+                divDayFlag: false,//是否需要除以天数
+                days: "",
             }
         },
         created() {
@@ -61,28 +55,91 @@
             changeParams(newValue) {
                 if(!newValue){return;}
                 this.params = newValue;
-                //this.loadReportData(newValue);
+                this.loadReportData(newValue);
                 this.prop.params = "";
             }
         },
         methods: {
-
-            loadReportData(params) {
-                let sql = this.prop.sqls;
-                for (let obj of params.searchSelect) {
-                    if (!obj.value) { continue; }
-                    if (obj.operation != 'in') {
-                        sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
+            getParams(params) {
+                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
+                let param = "";
+                if (params.searchSelect) {
+                    for (let obj of params.searchSelect) {
+                        if (!obj.value || !obj.value.length) { continue; }
+                        if(obj.tableField == "reportType"){
+                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
+                        }
+                        if (obj.type && obj.operation != 'in') {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        }
+                        if (obj.type && obj.operation == 'in') {
+                            if (!obj.value.length && !Array.isArray(obj.value)) { continue; }
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
+                            let inValue = "";
+                            for (let value of obj.value) {
+                                if (!value) { continue; }
+                                inValue += "'" + value + "',";
+                            }
+                            inValue = inValue.substring(0, inValue.length - 1);
+                            if (inValue) {
+                                param += " (" + inValue + ")";
+                            }
+                        }
                     }
                 }
-                if (groupby) {
-                    groupby = ' group by ' + groupby;
-                    sql += groupby;
+                if (!params.searchDate) { return param }
+                for (let obj of params.searchDate) {
+                    if (!obj.value) { continue; }
+                    if(obj.value instanceof Array){
+                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
+                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
+                        this.getDays(obj.value);
+                    }else{
+                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                    }                    
                 }
-                this.$requestData('/report/l    ist', 'post', { params: sql }).then(res => {
-                    this.chartData = res.datas;
+                return param;
+            },
+            getDays(dates){//获取选中的日期天数
+                let start = dates[0];
+                let end = dates[1];
+                let startDate;
+                let endDate
+                if(this.reportType == "dayReport"){//日报
+                    this.lastDay = end;
+                    startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1,start.substring(6,8));
+                    endDate = new Date(end.substring(0,4),parseInt(end.substring(4,6))-1,end.substring(6,8));
+                }else{//月报
+                    startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1);
+                    endDate = new Date(end.substring(0,4),end.substring(4,6));
+                    let day = new Date(endDate.getTime() - 86400000).getDate();
+                }           
+                let days = endDate.getTime() - startDate.getTime(); 
+    　　        this.days = parseInt(days / (1000 * 60 * 60 * 24))+1;
+            },
+            loadReportData(params) {
+                let sql = this.prop.sqls;
+                let param = this.getParams(params);
+                if(param){sql += param;}
+                if (!sql || !this.url) { return; }
+                this.$requestData(this.url, 'post', { params: sql }).then(res => {
+                    if(!res.datas){return;}
+                    console.log(res.datas);
+                   // this.data = res.datas;
                 });
             },
+            setData(datas){
+                this.chartData.rows = [];
+                let fields = this.chartData.fields;
+                for(let obj of datas){
+                    let row = {key:"",value:""};
+                    for(let field in fields){
+                        row.key = fields[field];
+                        row.value = obj.field / this.days;
+                    }
+                    this.chartData.rows.push(row);
+                }
+            }
         }
     }
 </script>

@@ -43,6 +43,7 @@
                 data: "",
                 params: "",
                 url: "",
+                reportType: "dayReport",
                 divDayFlag: false,//是否需要除以天数
                 days: "",
                 lastDay: "",
@@ -77,6 +78,9 @@
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
+                        if(obj.tableField == "reportType"){
+                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
+                        }
                         if (obj.type && obj.operation != 'in') {
                             param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
@@ -113,7 +117,7 @@
                 let end = dates[1];
                 let startDate;
                 let endDate
-                if(start > 999999 && end > 999999){//日报
+                if(this.reportType == "dayReport"){//日报
                     this.lastDay = end;
                     startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1,start.substring(6,8));
                     endDate = new Date(end.substring(0,4),parseInt(end.substring(4,6))-1,end.substring(6,8));
