@@ -423,8 +423,7 @@
         vertical-align: none;
         line-height: 50px;
         text-transform: none;
-        background: #409eff;
-        color: #fff;
+        background: rgba(242, 242, 242, 1);
         padding-left: 15px;
         margin: 10px 0 10px 0;
     }
@@ -440,7 +439,8 @@
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
     }
     .max_height_390{
-        max-height: 390px;
+        max-height: 460px;
+        width: 100%;
     }
     .el-table{
         position: unset !important;

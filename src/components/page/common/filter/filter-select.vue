@@ -41,6 +41,7 @@
             initOptionArr(datas) {
                 let data = datas ? datas : this.selectData.options;
                 this.selectData.optionArr = [];
+                if(!data){return;}
                 for (let item of data) {
                     let obj = {};
                     for (let field in item) {
@@ -87,7 +88,7 @@
         },
         watch: {
             changeSelectData(val){
-                console.log(val);
+                
             },
             changeValue(val) {
                 if (!val.length) { this.selectData.checkboxValue = false; return; }

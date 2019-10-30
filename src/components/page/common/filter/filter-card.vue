@@ -1,7 +1,7 @@
 <template>
     <div :style="{width:widthData,gridRow:'row-start 2 / row-end 3'}" class="wrapper" @click="routerTo">
         <div class="title_style">
-            <span class="blue_span" v-if="data.card_title">  </span>
+            <span class="blue_span" v-if="data.card_title"> </span>
             <span>&nbsp&nbsp{{data.card_title}}</span>
         </div>
         <div class="wrap" style="height: 120px;">
@@ -43,12 +43,16 @@
                 data: "",
                 params: "",
                 url: "",
+                divDayFlag: false,//是否需要除以天数
+                days: "",
+                lastDay: "",
             }
         },
         created() {
             this.data = this.prop.config.items;
             this.url = this.prop.config.url;
-            if(this.prop.config.widthData){
+            this.divDayFlag = this.prop.config.divDayFlag;
+            if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
             }
         },
@@ -59,30 +63,83 @@
         },
         watch: {
             changeParams(newValue) {
-                if(!newValue){return;}
+                if (!newValue) { return; }
                 this.params = newValue;
                 console.log(newValue);
-                //this.loadReportData(newValue);
+                this.loadReportData(newValue);
                 this.prop.params = "";
             }
         },
         methods: {
-
-            loadReportData(params) {
-                let sql = this.prop.sqls;
-                for (let obj of params.searchSelect) {
-                    if (!obj.value) { continue; }
-                    if (obj.operation != 'in') {
-                        sql += " " + obj.type + " " + obj.tableField + obj.operation + "'" + obj.value + "' ";
+            getParams(params) {
+                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
+                let param = "";
+                if (params.searchSelect) {
+                    for (let obj of params.searchSelect) {
+                        if (!obj.value || !obj.value.length) { continue; }
+                        if (obj.type && obj.operation != 'in') {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        }
+                        if (obj.type && obj.operation == 'in') {
+                            if (!obj.value.length && !Array.isArray(obj.value)) { continue; }
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
+                            let inValue = "";
+                            for (let value of obj.value) {
+                                if (!value) { continue; }
+                                inValue += "'" + value + "',";
+                            }
+                            inValue = inValue.substring(0, inValue.length - 1);
+                            if (inValue) {
+                                param += " (" + inValue + ")";
+                            }
+                        }
                     }
                 }
-                if(!sql || !obj.url){return;}                
+                if (!params.searchDate) { return param }
+                for (let obj of params.searchDate) {
+                    if (!obj.value) { continue; }
+                    if(obj.value instanceof Array){
+                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
+                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
+                        this.getDays(obj.value);
+                    }else{
+                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                    }                    
+                }
+                return param;
+            },
+            getDays(dates){//获取选中的日期天数
+                let start = dates[0];
+                let end = dates[1];
+                let startDate;
+                let endDate
+                if(start > 999999 && end > 999999){//日报
+                    this.lastDay = end;
+                    startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1,start.substring(6,8));
+                    endDate = new Date(end.substring(0,4),parseInt(end.substring(4,6))-1,end.substring(6,8));
+                }else{//月报
+                    startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1);
+                    endDate = new Date(end.substring(0,4),end.substring(4,6));
+                    let day = new Date(endDate.getTime() - 86400000).getDate();
+                    this.lastDay = end + "" + day;
+                }           
+                let days = endDate.getTime() - startDate.getTime(); 
+    　　        this.days = parseInt(days / (1000 * 60 * 60 * 24))+1;
+            },
+            loadReportData(params) {
+                let sql = this.prop.sqls;
+                let param = this.getParams(params);
+                if(param){sql += param;}
+                sql = sql.replace("reportDate",this.lastDay);
+                console.log(sql);
+                if (!sql || !this.url) { return; }
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
-                    this.data = res.datas;
+                    console.log(res.datas);
+                   // this.data = res.datas;
                 });
             },
-            routerTo(){
-                if(!this.prop.config.indexId){return;}
+            routerTo() {
+                if (!this.prop.config.indexId) { return; }
                 this.$router.push({ path: 'index', query: { reportId: this.prop.config.indexId } });
             }
         }
@@ -118,16 +175,19 @@
         line-height: 25px;
         margin: 0 5px
     }
-    .title_style{
+
+    .title_style {
         margin: 10px 0;
     }
-    .blue_span{
+
+    .blue_span {
         display: inline-block;
         background: #2d8cf0;
         width: 4px;
         height: 20px;
     }
-    span{
+
+    span {
         vertical-align: middle;
     }
 </style>

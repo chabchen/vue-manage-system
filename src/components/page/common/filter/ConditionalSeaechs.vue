@@ -56,6 +56,7 @@
         },
         created() {
             this.searchData = this.prop.config.searchData;
+            console.log(this.searchData);
             this.initFilterData();
         },
         methods: {
@@ -118,6 +119,7 @@
                 this.$parent.$parent.parentSearchEvent(param);
             },
             concatParams(sourceParams, targetParams) {
+                if(!sourceParams){return;}
                 let concatArr = [];
                 concatArr = sourceParams.concat(targetParams ? targetParams : []);
                 let temp = {};   //用于tableField判断重复
@@ -134,19 +136,22 @@
             initDate() {
                 let now = new Date();
                 let nowYear = now.getMonth() == 0 ? now.getFullYear() - 1 : now.getFullYear();
+                if(!this.searchData.searchDate){return;}
                 for (let obj of this.searchData.searchDate) {
-                    if (obj.dateType == "date") {
+                    if (obj.dateType == "date" || obj.dateType == "daterange") {
                         let nowMonth = now.getMonth() + 1;
                         let nowDay = new Date(now.getTime() - 86400000).getDate();//减去一天获取前一天日期
-                        nowMonth = nowMonth.length == 1 ? '0'+nowMonth : nowMonth;
-                        nowDay = nowDay.length == 1 ? '0'+nowDay : nowDay;
-                        obj.value = nowYear + "" + nowMonth+""+nowDay;
+                        nowMonth = nowMonth < 10 ? '0'+nowMonth : nowMonth;
+                        nowDay = nowDay < 10 ? '0'+nowDay : nowDay;
+                        if(obj.dateType == "date"){obj.value = nowYear + "" + nowMonth+""+nowDay;continue;}
+                        obj.value = [nowYear + "" + nowMonth+""+nowDay,nowYear + "" + nowMonth+""+nowDay];
                     }
-                    if (obj.dateType == "month") {
+                    if (obj.dateType == "month" || obj.dateType == "monthrange") {
                         let nowMonth = now.getMonth() == 0 ? 12 : now.getMonth();
                         nowYear = now.getMonth() == 0 ? nowYear -1 : nowYear;
-                        nowMonth = nowMonth.length == 1 ? '0'+nowMonth : nowMonth;
-                        obj.value = nowYear + "" + nowMonth;
+                        nowMonth = nowMonth < 10 ? '0'+nowMonth : nowMonth;
+                        if(obj.dateType == "month"){obj.value = nowYear + "" + nowMonth;continue;}
+                        obj.value = [nowYear + "" + nowMonth,nowYear + "" + nowMonth];
                     }
                 }
             },

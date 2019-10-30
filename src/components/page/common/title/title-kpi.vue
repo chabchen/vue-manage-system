@@ -1,24 +1,19 @@
 <template>
-    <div>
-        <div>
-            <div class="kpi_list">
-                <div class="kpi_item" v-for="(item, index) in items">
-                    <div v-if="item.children" v-for="(item2, index2) in item.children" class="item-compare">
-                        <p class="pro_kpi_title">{{item2.key}}</p>
-                        <p class="kpi_content">{{item2.value}}</p>
-                        <i>{{item.unit}}</i>
-                    </div>
-                    <div v-if="!item.children" class="item-compare">
-                        <p class="pro_kpi_title">{{item.key}}</p>
-                        <p class="kpi_content">{{item.value}}</p>
-                        <i>{{item.unit}}</i>
-                    </div>
-
-                </div>
-                <div v-if="showButton">
-                    <el-button class="ax-search" type="primary" @click="searchEvent" icon="el-icon-search">{{buttonTitle}}</el-button>
-                </div>
+    <div class="kpi_list" v-loading="loading">
+        <div class="kpi_item" v-for="(item, index) in items">
+            <div v-if="item.children" v-for="(item2, index2) in item.children" class="item-compare">
+                <p class="pro_kpi_title">{{item2.key}}</p>
+                <p class="kpi_content">{{item2.value}}</p>
+                <i>{{item2.unit}}</i>
             </div>
+            <div v-if="!item.children" class="item-compare">
+                <p class="pro_kpi_title">{{item.key}}</p>
+                <p class="kpi_content">{{item.value}}</p>
+                <i>{{item.unit}}</i>
+            </div>
+        </div>
+        <div v-if="showButton">
+            <el-button class="ax-search" type="primary" @click="searchEvent" icon="el-icon-search">{{buttonTitle}}</el-button>
         </div>
     </div>
 </template>
@@ -27,6 +22,7 @@
         props: { prop: Object },
         data() {
             return {
+                loading: true,
                 items: [],
                 showButton: false,
                 buttonTitle: '查询',
@@ -41,7 +37,6 @@
             this.buttonTitle = this.prop.config.buttonTitle;
             this.sql2 = this.prop.config.sql2;
             this.url = this.prop.config.url;
-            //this.loadReportData(this.prop.params);
         },
         computed: {
             changeParams() {
@@ -59,36 +54,36 @@
         methods: {
             searchEvent() {
             },
-            getParams(params){
-                if(!params || (!params.searchSelect && !params.searchDate)){return "";}
+            getParams(params) {
+                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
                 let param = "";
-                if(params.searchSelect){
+                if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
                         if (obj.type && obj.operation != 'in') {
                             param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
-                        if(obj.type && obj.operation == 'in'){
-                            if(!obj.value.length && !Array.isArray(obj.value)){continue;}
+                        if (obj.type && obj.operation == 'in') {
+                            if (!obj.value.length && !Array.isArray(obj.value)) { continue; }
                             param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
                             let inValue = "";
-                            for(let value of obj.value){
-                                if(!value){continue;}
+                            for (let value of obj.value) {
+                                if (!value) { continue; }
                                 inValue += "'" + value + "',";
                             }
-                            inValue = inValue.substring(0,inValue.length-1);
-                            if(inValue){
+                            inValue = inValue.substring(0, inValue.length - 1);
+                            if (inValue) {
                                 param += " (" + inValue + ")";
                             }
                         }
                         //多sql情况下根据筛选器选择对应的sql
-                        if(obj.tableField == "sqlFlag"){
+                        if (obj.tableField == "sqlFlag") {
                             //酸奶调拨【吨|件】切换
                             this.sqlFlag = obj.value == "sql2" ? true : false;
                         }
                     }
                 }
-                if(!params.searchDate){ return param}
+                if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
                     if (!obj.value) { continue; }
                     param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
@@ -96,27 +91,28 @@
                 return param;
             },
             loadReportData(params) {
-                let count = 0
                 let sql = this.prop.sqls;
                 let param = this.getParams(params);
-                if(this.sqlFlag){
+                if (this.sqlFlag) {
                     sql = this.sql2;
                 }
-                if(!sql || !this.url){return;}
+                if (!sql || !this.url) { return; }
                 this.$requestData(this.url, 'post', { params: sql + param }).then(res => {
-                    if (!res.datas[0]) { return; }
-                    var params = this.prop.config.items
-                    for(let i in params){
-                        if(this.items[i].children){
-                            this.items[i].children[count].value = res.datas[0][params[i].filedName]
-                            count++
-                            if(count>=this.items[i].children.length){count=0}
-                        }else{
-                            this.items[i].value = res.datas[0][params[i].filedName]
-                        }
-                    }
+                    if (!res.datas) { return; }
+                    this.loading = false;
+                    this.setData(res.datas);
                 });
             },
+            setData(datas) {
+                for (let obj of datas) {
+                    for (let obj2 of this.items) {
+                        if (!obj2.children) { obj2.value = obj[obj2.filedName];continue;}
+                        for (let obj3 of obj2.children) {
+                            obj3.value = obj[obj3.filedName];
+                        }
+                    }
+                }
+            }
         }
     }
 </script>
@@ -126,6 +122,7 @@
         display: flex;
         flex-direction: row;
     }
+
     .kpi_list .kpi_item {
         display: flex;
         flex-direction: column;
@@ -142,12 +139,14 @@
         text-align: center;
         min-height: 74px;
     }
+
     .kpi_list .kpi_item .item-compare {
         display: flex;
         flex-direction: row;
         flex: 1;
         align-items: center;
     }
+
     .kpi_list .kpi_item .kpi_content {
         color: #888;
         font-weight: 700;
@@ -155,6 +154,7 @@
         font-size: 20px;
         margin-left: 5px;
     }
+
     .pro_kpi_title {
         font-size: 14px;
         white-space: nowrap;

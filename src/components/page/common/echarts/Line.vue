@@ -10,7 +10,7 @@
                     </el-select>
                 </div>
             </div>
-            <ve-line :data="chartData" width=100% height="414px" :extend="chartExtend" :colors="chartSettings.chartColor" :loading="loading"
+            <ve-line width=100% height="460px" style="top:25px" :data="chartData" :extend="chartExtend" :colors="chartSettings.chartColor" :loading="loading"
                 :settings="chartSettings" />
         </div>
     </div>
@@ -27,6 +27,8 @@
                 loading: true,
                 widthData: '100%',
                 params: '',
+                reportType: "dayReport",
+                sql2: "",
             }
         },
         created() {
@@ -35,6 +37,7 @@
             this.chartData = this.prop.config.chartData;
             this.chartExtend = this.prop.config.chartExtend;
             this.chartSettings = this.prop.config.chartSettings;
+            this.sql2 = this.prop.config.sql2;
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
             }
@@ -48,28 +51,88 @@
             changeParams(newValue) {
                 if(!newValue){return;}
                 this.params = newValue;
-                //this.loadReportData(newValue);
+                this.loadReportData(newValue);
                 this.prop.params = "";
             }
         },
         methods: {
-
-            loadReportData(params) {
-                let sql = this.prop.sqls;
-                for (let obj of params.searchSelect) {
-                    if (!obj.value) { continue; }
-                    if (obj.operation != 'in') {
-                        sql += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "'";
+            getParams(params) {
+                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
+                let param = "";
+                if (params.searchSelect) {
+                    for (let obj of params.searchSelect) {
+                        if (!obj.value || !obj.value.length) { continue; }
+                        if(obj.tableField == "reportType"){
+                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
+                        }
+                        if (obj.type && obj.operation != 'in') {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        }
+                        if (obj.type && obj.operation == 'in') {
+                            if (!obj.value.length && !Array.isArray(obj.value)) { continue; }
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
+                            let inValue = "";
+                            for (let value of obj.value) {
+                                if (!value) { continue; }
+                                inValue += "'" + value + "',";
+                            }
+                            inValue = inValue.substring(0, inValue.length - 1);
+                            if (inValue) {
+                                param += " (" + inValue + ")";
+                            }
+                        }
                     }
                 }
-                if (groupby) {
-                    groupby = ' group by ' + groupby;
-                    sql += groupby;
+                if (!params.searchDate) { return param }
+                for (let obj of params.searchDate) {
+                    if (!obj.value) { continue; }
+                    if(Array.isArray(obj.value)){
+                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
+                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
+                    }else{
+                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                    }                    
                 }
-                this.$requestData('/report/list', 'post', { params: sql }).then(res => {
-                    this.chartData = res.datas;
+                return param;
+            },
+            loadReportData(params) {
+                let sql = this.prop.sqls;
+                if(!sql){return;}
+                let param = this.getParams(params);
+                let groupby = '';
+                if(this.reportType == "monthReport" && this.sql2){
+                    groupby = this.sql2.split("groupby")[1];
+                    sql = this.sql2.split("groupby")[0];
+                }else{
+                    groupby = sql.split("groupby")[1]
+                    sql = sql.split("groupby")[0];
+                }
+                //判断是否存在groupby
+                if (groupby) {
+                    groupby = ' group by' + groupby;
+                }
+                if(!sql || !this.url){return;}
+                this.$requestData(this.url , 'post', { params: sql + param + groupby }).then(res => {
+                    if (!res.datas) {return;}
+                    this.setData(res.datas);
                 });
             },
+            setData(datas){
+                this.chartData.rows = [];
+                let fields = this.chartData.fields;
+                this.chartData.columns = this.chartData.columns2;
+                if(this.reportType == "monthReport"){
+                    fields = this.chartData.fields2;
+                    this.chartData.columns = this.chartData.columns3;
+                }                
+                for(let obj of datas){
+                    let row = {};
+                    for(let field in fields){
+                        row[fields[field]] = obj.field;
+                    }
+                    this.chartData.rows.push(row);
+                }
+            }
         }
     }
 </script>
@@ -80,12 +143,9 @@
         font-style: normal;
         font-size: 20px;
         letter-spacing: normal;
-        /*color: #333333;*/
         vertical-align: none;
         line-height: 50px;
         text-transform: none;
-        /*background: #409eff;*/
-        /*color: #fff;*/
         padding-left: 15px;
         margin: 10px 0 10px 0;
         background: rgba(242, 242, 242, 1);
@@ -97,7 +157,6 @@
         width: 100%;
         margin: 0 auto;
         border-width: 0px;
-        height: 500px;
         background: inherit;
         background-color: rgba(255, 255, 255, 1);
         border: none;

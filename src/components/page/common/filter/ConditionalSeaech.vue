@@ -32,6 +32,7 @@
       changeParams(newValue) {
         if (!newValue) { return; }
         this.params = newValue;
+        this.changeSearchData(newValue);
         this.prop.params = "";
       }
     },
@@ -40,6 +41,15 @@
       this.initFilterData();
     },
     methods: {
+      changeSearchData(data){
+        if(!data.searchSelect){return;}
+        for (let obj of this.searchData.searchSelect) {
+          for (let obj2 of data.searchSelect) {
+              if(obj.tableField != obj2.tableField){continue;}
+              obj.value = obj2.value;
+          }
+        }
+      },
       initFilterData: async function () {
         for (let obj of this.searchData.searchSelect) {
           if (obj.sourceType && obj.sourceType == "presto" && obj.sql) {

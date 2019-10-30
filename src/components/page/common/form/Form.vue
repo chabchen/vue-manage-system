@@ -127,7 +127,6 @@
                     if(tableField.indexOf("biz_unit") == -1){
                         sql += " and pfi.biz_unit = 'all'";
                     }
-                    console.log(sql)
                 }
                 if (groupby) {
                     groupby = ' group by ' + groupby;

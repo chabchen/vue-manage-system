@@ -15,7 +15,7 @@
                     </el-select>
                 </div>
             </div>
-            <ve-pie :data="chartData" :settings="chartSettings" :loading="loading"></ve-pie>
+            <ve-pie width=100% height="460px" style="top:25px" :data="chartData" :settings="chartSettings" :loading="loading"></ve-pie>
         </div>
     </div>
 </template>
@@ -93,12 +93,9 @@
         font-style: normal;
         font-size: 20px;
         letter-spacing: normal;
-        /*color: #333333;*/
         vertical-align: none;
         line-height: 50px;
         text-transform: none;
-        /*background: #409eff;*/
-        /*color: #fff;*/
         padding-left: 15px;
         margin: 10px 0 10px 0;
         background: rgba(242, 242, 242, 1);
@@ -110,7 +107,6 @@
         width: 99.6%;
         margin: 2% auto;
         border-width: 0px;
-        height: 500px;
         background: inherit;
         background-color: rgba(255, 255, 255, 1);
         border: none;

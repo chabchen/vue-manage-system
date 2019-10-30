@@ -1,5 +1,5 @@
 <template>
-    <div :style="{width:widthData}" class="line-box">
+    <div :style="{width:widthData}" class="line-box" v-loading="loading">
         <div class="echart-ex1">
             <div v-if = "selectData.title" class="lineBar-title">
                 <p>{{selectData.title}}</p>
@@ -10,7 +10,7 @@
                     </el-select>
                 </div>
             </div>
-            <ve-histogram width=100% height="414px" :extend="chartExtend" :colors="chartSettings.chartColor" :data="chartData" :loading="loading"
+            <ve-histogram width=100% height="460px" style="top:25px" :extend="chartExtend" :colors="chartSettings.chartColor" :data="chartData" :loading="loading"
                 :settings="chartSettings" />
         </div>
     </div>
@@ -33,7 +33,6 @@
             }
         },
         created() {
-            this.loading = false;
             this.selectData = this.prop.config.selectData;
             this.chartData = this.prop.config.chartData;
             this.chartExtend = this.prop.config.chartExtend;
@@ -43,7 +42,6 @@
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
             }
-            //this.loadReportData(this.prop.params);
         },
         computed: {
             changeParams() {
@@ -113,18 +111,22 @@
                 }
                 if(!sql || !this.url){return;}
                 this.$requestData(this.url , 'post', { params: sql + param + groupby }).then(res => {
-                    if (!res.datas[0]) { return; }
-                    this.chartData.rows = []
-                    let filedArr = this.prop.config.selectData.filedArr
-                    let chartData = this.prop.config.chartData
-                    for(let i=0;i<res.datas.length;i++){
-                        chartData.rows[i] = {}
-                        for(let item in chartData.columns){
-                            chartData.rows[i][chartData.columns[item]] = res.datas[i][filedArr[item]]
-                        }
-                    }
+                    if (!res.datas) { return; }
+                    this.loading = false;
+                    this.setData(res.datas);
                 });
             },
+            setData(datas){
+                this.chartData.rows = [];
+                let fields = this.chartData.fields;         
+                for(let obj of datas){
+                    let row = {};
+                    for(let field in fields){
+                        row[fields[field]] = obj[field];
+                    }
+                    this.chartData.rows.push(row);
+                }
+            }
         }
     }
 </script>
@@ -134,13 +136,10 @@
         width: 99.6%;
         margin: 2% auto;
         border-width: 0px;
-        height: 500px;
         background: inherit;
         background-color: rgba(255, 255, 255, 1);
         border: none;
         border-radius: 0px;
-        /*-moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);*/
-        /*-webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);*/
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-sizing: border-box;
     }
@@ -151,11 +150,9 @@
         font-style: normal;
         font-size: 20px;
         letter-spacing: normal;
-        color: #333333;
         vertical-align: none;
         line-height: 50px;
         text-transform: none;
-        /*background: #409eff;*/
         background: rgba(242, 242, 242, 1);
         color: #333333;
         padding-left: 15px;

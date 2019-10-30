@@ -20,7 +20,6 @@ a {
     text-decoration: none
 }
 
-
 .content-box {
     position: absolute;
     left: 250px;
@@ -58,6 +57,9 @@ a {
 
 .el-table th {
     background-color: #f5f7fa !important;
+}
+.el-table::before{
+    height: 0px;
 }
 /* 去掉table最后空的一列 */
 .has-gutter .gutter {

@@ -31,7 +31,7 @@
         props: { prop: Object },
         data() {
             return {
-                loading: false,
+                loading: true,
                 params: '',
                 title: '',
                 widthData: '100%',
@@ -128,9 +128,6 @@
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
-                    for (let obj of res.datas) {//加上当前数据的层级
-                        obj.level = level;
-                    }
                     this.tableData = res.datas;
                     this.showTable = true;
                     this.loadTableHead(level, true);
@@ -167,12 +164,7 @@
                 }
             },
             objectSpanMethod({ row, column, rowIndex, columnIndex }) {//动态合并行
-                if (row.level > 0 && columnIndex === 0) {
-                    let _row = this.rowspanData['spanArr' + columnIndex][rowIndex];
-                    let _col = _row > 0 ? 1 : 0;
-                    return { rowspan: _row, colspan: _col };
-                }
-                if (row.level > 2 && columnIndex === 1) {
+                if (columnIndex === 0) {
                     let _row = this.rowspanData['spanArr' + columnIndex][rowIndex];
                     let _col = _row > 0 ? 1 : 0;
                     return { rowspan: _row, colspan: _col };
@@ -215,8 +207,7 @@
         vertical-align: none;
         line-height: 50px;
         text-transform: none;
-        background: #409eff;
-        color: #fff;
+        background: rgba(242, 242, 242, 1);
         padding-left: 15px;
         margin: 10px 0 10px 0;
     }
@@ -228,13 +219,15 @@
     .line-box {
         box-sizing: border-box;
         display: inline-grid;
+        overflow: auto;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
+        margin-bottom: 20px
     }
 
     .max_height_390 {
-        max-height: 390px;
+        max-height: 460px;
         width: 100%;
     }
 
@@ -245,5 +238,8 @@
 
     .has-gutter .gutter {
         display: block !important;
+    }
+    .el-table::before {
+        height: 0px
     }
 </style>
