@@ -1,18 +1,21 @@
 <template>
-    <el-select class="select_style" v-model="selectData.value" :multiple="selectData.multiple" filterable :clearable = "selectData.clearable" collapse-tags placeholder="请选择">
-        <template v-if="selectData.multiple">
-            <el-input style="width: 90%;margin-left: 5%" v-model="selectData.searchValue" placeholder="请输入搜索内容"></el-input>
-            <el-row>
-                <el-col style="padding: 5% 0 0 10%" :span="12">
-                    <el-checkbox v-model="selectData.checkboxValue" style="margin-left: 15%;margin-bottom: 10px" @change="check_all">全部</el-checkbox>
-                </el-col>
-                <el-col style="padding: 4% 0 0 10%" :span="12">
-                    <el-button size="small" class="check_button" @click="check_other">反选</el-button>
-                </el-col>
-            </el-row>
-        </template>
-        <el-option v-for="item in selectData.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
-    </el-select>
+    <div v-loading="loading">
+        <el-select class="select_style" v-model="selectData.value" @change="selectChange" :multiple="selectData.multiple" filterable
+            :clearable="selectData.clearable" collapse-tags placeholder="请选择">
+            <template v-if="selectData.multiple">
+                <el-input style="width: 90%;margin-left: 5%" v-model="selectData.searchValue" placeholder="请输入搜索内容"></el-input>
+                <el-row>
+                    <el-col style="padding: 5% 0 0 10%" :span="12">
+                        <el-checkbox v-model="selectData.checkboxValue" style="margin-left: 15%;margin-bottom: 10px" @change="check_all">全部</el-checkbox>
+                    </el-col>
+                    <el-col style="padding: 4% 0 0 10%" :span="12">
+                        <el-button size="small" class="check_button" @click="check_other">反选</el-button>
+                    </el-col>
+                </el-row>
+            </template>
+            <el-option v-show="optionFlag" v-for="item in selectData.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+        </el-select>
+    </div>
 </template>
 
 <script>
@@ -20,6 +23,8 @@
         props: { prop: Object },
         data() {
             return {
+                loading: false,
+                optionFlag: true,
                 selectData: {
                     optionArr: [],
                     options: [],
@@ -38,10 +43,14 @@
             this.initOptionArr(this.selectData.options);
         },
         methods: {
+            selectChange() {
+                if (!this.selectData.relation && !this.selectData.relationField) { return; }
+                this.$parent.$parent.parentSearchEvent(this.selectData);
+            },
             initOptionArr(datas) {
                 let data = datas ? datas : this.selectData.options;
                 this.selectData.optionArr = [];
-                if(!data){return;}
+                if (!data) { return; }
                 for (let item of data) {
                     let obj = {};
                     for (let field in item) {
@@ -77,7 +86,7 @@
         },
         computed: {
             changeSelectData() {
-                return this.prop;
+                return this.prop.dataFlag;
             },
             changeValue() {
                 return this.selectData.value;
@@ -87,8 +96,15 @@
             }
         },
         watch: {
-            changeSelectData(val){
-                
+            changeSelectData(prop) {
+                if((this.prop.data.relation || this.prop.data.relationField) && this.prop.currentcomp 
+                && this.prop.currentcomp.split(",").indexOf(this.prop.data.field) == -1){
+                    this.loading = this.prop.dataFlag;
+                }
+                this.optionFlag = !this.optionFlag;
+                this.selectData = this.prop.data;
+                this.searchDatas = this.prop.searchDatas;
+                this.optionFlag = !this.optionFlag;
             },
             changeValue(val) {
                 if (!val.length) { this.selectData.checkboxValue = false; return; }
@@ -128,7 +144,8 @@
         font-family: inherit;
         line-height: 16px;
     }
-    .el-select__tags{
+
+    .el-select__tags {
         max-width: 100% !important;
     }
 
@@ -144,7 +161,8 @@
         height: 28px;
         line-height: 28px;
     }
-    .select_style{
+
+    .select_style {
         width: 158px;
         height: 28px;
     }

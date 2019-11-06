@@ -1,5 +1,5 @@
 <template>
-    <div :style="{width:widthData,gridRow:'row-start 2 / row-end 3'}" class="wrapper" @click="routerTo">
+    <div :style="{width:widthData,gridRow:'row-start 2 / row-end 3'}" class="wrapper" @click="routerTo" v-loading="loading">
         <div class="title_style">
             <span class="blue_span" v-if="data.card_title"> </span>
             <span>&nbsp&nbsp{{data.card_title}}</span>
@@ -39,6 +39,7 @@
         props: { prop: Object },
         data() {
             return {
+                loading: true,
                 widthData: "25%",
                 data: "",
                 params: "",
@@ -66,7 +67,6 @@
             changeParams(newValue) {
                 if (!newValue) { return; }
                 this.params = newValue;
-                console.log(newValue);
                 this.loadReportData(newValue);
                 this.prop.params = "";
             }
@@ -81,28 +81,18 @@
                         if(obj.tableField == "reportType"){
                             this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
                         }
-                        if (obj.type && obj.operation != 'in') {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
                         }
-                        if (obj.type && obj.operation == 'in') {
-                            if (!obj.value.length && !Array.isArray(obj.value)) { continue; }
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
-                            let inValue = "";
-                            for (let value of obj.value) {
-                                if (!value) { continue; }
-                                inValue += "'" + value + "',";
-                            }
-                            inValue = inValue.substring(0, inValue.length - 1);
-                            if (inValue) {
-                                param += " (" + inValue + ")";
-                            }
+                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
                     }
                 }
                 if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
                     if (!obj.value) { continue; }
-                    if(obj.value instanceof Array){
+                    if(Array.isArray(obj.value)){
                         param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                         param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
                         this.getDays(obj.value);
@@ -136,10 +126,13 @@
                 if(param){sql += param;}
                 sql = sql.replace("reportDate",this.lastDay);
                 console.log(sql);
-                if (!sql || !this.url) { return; }
+                if (!sql || !this.url) { this.loading = false; return; }
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
+                    this.loading = false;
                     console.log(res.datas);
                    // this.data = res.datas;
+                }).catch(() => {
+                    this.loading = false;
                 });
             },
             routerTo() {

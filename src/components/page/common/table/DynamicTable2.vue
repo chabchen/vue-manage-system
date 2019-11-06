@@ -4,14 +4,14 @@
             <p>{{title}}</p>
         </div>
         <div v-if="showTable">
-            <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border>
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" stripe border style="width: 107em" max-height="460">
                 <template v-for="(col, index) in tableColumns">
-                    <el-table-column v-if="col.children" :prop="col.prop" :label="col.label" align="center">
+                    <el-table-column width="150" v-if="col.children" :prop="col.prop" :label="col.label" align="center">
                         <template v-for="(col2,index2) in col.children">
-                            <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable="col2.sortable" />
+                            <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable="col2.sortable"/>
                         </template>
                     </el-table-column>
-                    <el-table-column v-else :key="index" :prop="col.prop" :label="col.label" :sortable="col.sortable" min-width="100px">
+                    <el-table-column v-else :key="index" :prop="col.prop" :label="col.label" :sortable="col.sortable" min-width="100px" show-overflow-tooltip>
                         <template slot="header" slot-scope="scope">
                             {{col.label}}
                             <el-row v-show="col.event" style="float: right;line-height:0;">
@@ -31,7 +31,7 @@
         props: { prop: Object },
         data() {
             return {
-                loading: true,
+                loading: false,
                 params: '',
                 title: '',
                 widthData: '100%',
@@ -74,21 +74,11 @@
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
-                        if (obj.type && obj.operation != 'in') {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
                         }
-                        if (obj.type && obj.operation == 'in') {
-                            if (!obj.value.length && !Array.isArray(obj.value)) { continue; }
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
-                            let inValue = "";
-                            for (let value of obj.value) {
-                                if (!value) { continue; }
-                                inValue += "'" + value + "',";
-                            }
-                            inValue = inValue.substring(0, inValue.length - 1);
-                            if (inValue) {
-                                param += " (" + inValue + ")";
-                            }
+                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
                         //多sql情况下根据筛选器选择对应的sql
                         if (obj.tableField == "sqlFlag") {
@@ -105,8 +95,9 @@
                 return param;
             },
             loadReportData(level) {
+                this.tableData = [];
                 let sql = this.prop.sqls;
-                if (!sql || !this.params) { return; }
+                if (!sql || !this.params || !this.url) { this.loading = false;return; }
                 let param = this.getParams(this.params);
                 if (this.sqlFlag && this.sql2) {
                     sql = this.sql2;
@@ -119,18 +110,21 @@
                 if (level == 2) {//下钻到品项时需要加上sku的查询字段
                     sql = sql.replace("psatm.orgn_name", "psatm.product_sku,psatm.orgn_name");
                     groupby = groupby.replace("psatm.orgn_name", "psatm.product_sku,psatm.orgn_name");
+                    groupby = groupby.replace("temp.product_child_brand", "temp.product_child_brand,temp.product_sku");
+                    groupby = groupby.replace("group by temp.product_child_brand", "group by temp.product_child_brand,temp.product_sku");
                 }
                 if (groupby) {
                     groupby = ' group by ' + groupby;
                     sql += groupby;
                 }
-                if (!sql || !this.url) { return; }
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
                     this.tableData = res.datas;
                     this.showTable = true;
                     this.loadTableHead(level, true);
+                }).catch(() => {
+                    this.loading = false;
                 });
             },
             loadTableHead(level, flag) {//动态加载表头
@@ -164,6 +158,9 @@
                 }
             },
             objectSpanMethod({ row, column, rowIndex, columnIndex }) {//动态合并行
+                for(let field in row){
+                    if(row[field] == "%" || row[field] == ".00%" || row[field] == ".0%"){row[field] = '0%';}
+                }
                 if (columnIndex === 0) {
                     let _row = this.rowspanData['spanArr' + columnIndex][rowIndex];
                     let _col = _row > 0 ? 1 : 0;
@@ -172,7 +169,7 @@
             },
             getSpanArr(data, level, field) {//获取合并行数据
                 let spanArr = [], pos = 0;
-                for (var i = 0, j = data.length; i < j; i++) {
+                for (let i = 0, j = data.length; i < j; i++) {
                     if (i == 0) {
                         spanArr.push(1);
                         pos = 0;
@@ -218,12 +215,11 @@
 
     .line-box {
         box-sizing: border-box;
+        margin-bottom: 20px;
         display: inline-grid;
-        overflow: auto;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
-        margin-bottom: 20px
     }
 
     .max_height_390 {
@@ -239,7 +235,8 @@
     .has-gutter .gutter {
         display: block !important;
     }
-    .el-table::before {
-        height: 0px
+    .auto_div{
+        height: 460px;
+        width: 1300px;
     }
 </style>

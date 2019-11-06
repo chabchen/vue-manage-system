@@ -1,9 +1,9 @@
 <template>
-    <div :style="{width:widthData}" class="line-box">
+    <div :style="{width:widthData}" class="line-box" v-loading="loading">
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <el-table :data="tableData" class="max_height_390" border stripe>
+        <el-table :data="tableData" class="max_height_390" border stripe :show-summary="showSummary" style="width: 107em" max-height="460">
             <template v-for="(col, index) in tableColumns">
                 <el-table-column show-overflow-tooltip :key="index" :prop="col.prop" :label="col.label"></el-table-column>
             </template>
@@ -12,40 +12,83 @@
 </template>
 
 <script>
-
     export default {
         props: { prop: Object },
         data() {
             return {
-                loading: false,
+                loading: true,
                 widthData: '100%',
                 title: '',
                 tableColumns: [],
                 tableData: []
             }
         },
+        computed: {
+            changeParams() {
+                return this.prop.params;
+            }
+        },
+        watch: {
+            changeParams(newValue) {
+                if (!newValue) { return; }
+                this.params = newValue;
+                this.loadReportData();
+                this.prop.params = "";
+            }
+        },
         created() {
-            this.tableColumns = this.prop.config.tableColumns;
-            this.tableData = this.prop.config.tableData;
-            this.title = this.prop.config.title;
-            if(this.prop.config.widthData){
+            if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
-            }            
-            //this.getData();
+            }
+            this.title = this.prop.config.title;
+            this.tableColumns = this.prop.config.tableColumns; 
+            this.showSummary = this.prop.config.showSummary;
+            this.url = this.prop.config.url;
         },
         methods: {
-            getData: function (params) {
-                this.loading = true;
-                this.$requestData('/report/list', 'post').then(res => {
-
-                    if (res.datas && res.datas.length) {
-                        this.tableData = [];
-                        this.tableData = res.datas;
-                        this.tableColumns = res.datas2;
+            getParams(params) {
+                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
+                let param = "";
+                if (params.searchSelect) {
+                    for (let obj of params.searchSelect) {
+                        if (!obj.value || !obj.value.length) { continue; }
+                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
+                        }
+                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        }
                     }
+                }
+                if (!params.searchDate) { return param }
+                for (let obj of params.searchDate) {
+                    if (!obj.value) { continue; }
+                    param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                }
+                return param;
+            },
+            loadReportData() {
+                this.loading = true;
+                let sql = this.prop.sqls;
+                if (!sql || !this.url || !this.params) { this.loading = false; return; }
+                let param = this.getParams(this.params);
+                let groupby = sql.split("groupby")[1];
+                if (groupby) {
+                    sql = sql.split("groupby")[0];
+                }
+                if (param) { sql += param; }
+                if (groupby) {
+                    groupby = ' group by ' + groupby;
+                    sql += groupby;
+                }
+                this.$requestData(this.url, 'post', { params: sql }).then(res => {
+                    this.loading = false;
+                    if (!res.datas) { return; }
+                    this.tableData = res.datas; 
+                }).catch(() => {
                     this.loading = false;
                 });
-            }
+            },
         }
     }
 </script>
@@ -65,8 +108,7 @@
         vertical-align: none;
         line-height: 50px;
         text-transform: none;
-        background: #409eff;
-        color: #fff;
+        background: rgba(242, 242, 242, 1);
         padding-left: 15px;
         margin: 10px 0 10px 0;
     }
@@ -85,6 +127,6 @@
 
     .max_height_390 {
         max-height: 390px;
-        overflow:  auto;
+        overflow: auto;
     }
 </style>

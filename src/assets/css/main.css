@@ -54,9 +54,13 @@ a {
 .crumbs {
     margin: 10px 0;
 }
-
+/* 表格通用css */
 .el-table th {
     background-color: #f5f7fa !important;
+    padding: 3px 0 !important;
+}
+.el-table td {
+    padding: 3px 0 !important;
 }
 .el-table::before{
     height: 0px;

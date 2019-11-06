@@ -1,16 +1,16 @@
 <template>
-    <div :style="{width:widthData}" class="line-box">
+    <div :style="{width:widthData}" class="line-box" v-loading="loading">
         <div class="head-title">
             <p>{{title}}</p>
         </div>
         <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border>
-            <template v-for="(col, index) in tableColumns" >
-                <el-table-column v-if = "col.children" :prop="col.prop" :label="col.label" >
+            <template v-for="(col, index) in tableColumns">
+                <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
                     <template v-for="(col2,index2) in col.children">
-                        <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable = "col2.sortable"/>
-                    </template>    
+                        <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable="col2.sortable" />
+                    </template>
                 </el-table-column>
-                <el-table-column v-else  :key="index" :prop="col.prop" :label="col.label" :sortable = "col.sortable">    
+                <el-table-column v-else :key="index" :prop="col.prop" :label="col.label" :sortable="col.sortable" min-width="100px" show-overflow-tooltip>
                     <template slot="header" slot-scope="scope">
                         {{col.label}}
                         <el-row v-show="col.event" style="float: right;line-height:0;">
@@ -29,8 +29,9 @@
         props: { prop: Object },
         data() {
             return {
+                loading: true,
                 params: '',
-                title:'',
+                title: '',
                 widthData: '100%',
                 showSummary: false,
                 rowspanData: {},
@@ -39,222 +40,7 @@
                 sqlFlag: false,
                 sql2: "",
                 tableColumns: [],
-                tableData: [],
-                tableData1: [{
-                    id: '液态奶事业部',
-                    name: '王小虎',
-                    amount1: '234',
-                    amount2: '3.2',
-                    amount3: 10,
-                    level: 1,
-                }, {
-                    id: '奶粉事业部',
-                    name: '王小虎',
-                    amount1: '165',
-                    amount2: '4.43',
-                    amount3: 12,
-                    level: 1,
-                }, {
-                    id: '冷饮事业部',
-                    name: '王小虎',
-                    amount1: '324',
-                    amount2: '1.9',
-                    amount3: 9,
-                    level: 1,
-                }, {
-                    id: '健康饮品事业部',
-                    name: '王小虎',
-                    amount1: '621',
-                    amount2: '2.2',
-                    amount3: 17,
-                    level: 1,
-                }, {
-                    id: '奶酪事业部',
-                    name: '王小虎',
-                    amount1: '539',
-                    amount2: '4.1',
-                    amount3: 15,
-                    level: 1,
-                }],
-                tableData2: [
-                    {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 2,
-                    }, {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌2',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 2,
-                    }, {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌3',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 2,
-                    }, {
-                        id: '奶粉事业部',
-                        id2: '奶粉事业部--子品牌',
-                        name: '王小虎',
-                        amount1: '165',
-                        amount2: '4.43',
-                        amount3: 12,
-                        level: 2,
-                    }, {
-                        id: '奶粉事业部',
-                        id2: '奶粉事业部--子品牌2',
-                        name: '王小虎',
-                        amount1: '165',
-                        amount2: '4.43',
-                        amount3: 12,
-                        level: 2,
-                    }, {
-                        id: '冷饮事业部',
-                        id2: '冷饮事业部--子品牌',
-                        name: '王小虎',
-                        amount1: '324',
-                        amount2: '1.9',
-                        amount3: 9,
-                        level: 2,
-                    }, {
-                        id: '健康饮品事业部',
-                        id2: '健康饮品事业部--子品牌2',
-                        name: '王小虎',
-                        amount1: '621',
-                        amount2: '2.2',
-                        amount3: 17,
-                        level: 2,
-                    }, {
-                        id: '奶酪事业部',
-                        id2: '奶酪事业部--子品牌',
-                        name: '王小虎',
-                        amount1: '539',
-                        amount2: '4.1',
-                        amount3: 15,
-                        level: 2,
-                    }, {
-                        id: '冷饮事业部',
-                        id2: '冷饮事业部--子品牌2',
-                        name: '王小虎',
-                        amount1: '324',
-                        amount2: '1.9',
-                        amount3: 9,
-                        level: 2,
-                    }, {
-                        id: '健康饮品事业部',
-                        id2: '健康饮品事业部--子品牌',
-                        name: '王小虎',
-                        amount1: '621',
-                        amount2: '2.2',
-                        amount3: 17,
-                        level: 2,
-                    }, {
-                        id: '奶酪事业部',
-                        id2: '奶酪事业部--子品牌2',
-                        name: '王小虎',
-                        amount1: '539',
-                        amount2: '4.1',
-                        amount3: 15,
-                        level: 2,
-                    }
-                ],
-                tableData3: [
-                    {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌',
-                        id3: '液态奶事业部--子品牌--SKU',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 3,
-                    },
-                    {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌',
-                        id3: '液态奶事业部--子品牌--SKU2',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 3,
-                    },
-                    {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌',
-                        id3: '液态奶事业部--子品牌--SKU3',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 3,
-                    }
-                    , {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌2',
-                        id3: '液态奶事业部--子品牌2--SKU',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 3,
-                    }
-                    , {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌2',
-                        id3: '液态奶事业部--子品牌2--SKU2',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 3,
-                    }, {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌2',
-                        id3: '液态奶事业部--子品牌2--SKU3',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 3,
-                    }, {
-                        id: '液态奶事业部',
-                        id2: '液态奶事业部--子品牌3',
-                        id3: '液态奶事业部--子品牌3--SKU',
-                        name: '王小虎',
-                        amount1: '234',
-                        amount2: '3.2',
-                        amount3: 10,
-                        level: 3,
-                    }, {
-                        id: '奶粉事业部',
-                        id2: '奶粉事业部--子品牌',
-                        id3: '奶粉事业部--子品牌--SKU',
-                        name: '王小虎',
-                        amount1: '165',
-                        amount2: '4.43',
-                        amount3: 12,
-                        level: 3,
-                    }, {
-                        id: '奶粉事业部',
-                        id2: '奶粉事业部--子品牌2',
-                        id3: '奶粉事业部--子品牌2--SKU',
-                        name: '王小虎',
-                        amount1: '165',
-                        amount2: '4.43',
-                        amount3: 12,
-                        level: 3,
-                    }
-                ]              
+                tableData: []
             };
         },
         computed: {
@@ -264,14 +50,14 @@
         },
         watch: {
             changeParams(newValue) {
-                if(!newValue){return;}
+                if (!newValue) { return; }
                 this.params = newValue;
                 this.loadTableHead(this.level);
                 this.prop.params = "";
             }
         },
         created() {
-            if(this.prop.config.widthData){
+            if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
             }
             this.showSummary = this.prop.config.showSummary;
@@ -280,85 +66,83 @@
             this.loadTableHead(this.prop.config.level);
         },
         methods: {
-            getParams(params){
-                if(!params || (!params.searchSelect && !params.searchDate)){return "";}
+            getParams(params) {
+                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
                 let param = "";
-                if(params.searchSelect){
+                if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
-                        if (obj.type && obj.operation != 'in') {
+                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
+                        }
+                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
                             param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
-                        }
-                        if(obj.type && obj.operation == 'in'){
-                            if(!obj.value.length && !Array.isArray(obj.value)){continue;}
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
-                            let inValue = "";
-                            for(let value of obj.value){
-                                if(!value){continue;}
-                                inValue += "'" + value + "',";
-                            }
-                            inValue = inValue.substring(0,inValue.length-1);
-                            if(inValue){
-                                param += " (" + inValue + ")";
-                            }
-                        }
-                        //多sql情况下根据筛选器选择对应的sql
-                        if(obj.tableField == "sqlFlag"){
-                            //酸奶调拨【吨|件】切换
-                            this.sqlFlag = obj.value == "sql2" ? true : false;
                         }
                     }
                 }
-                if(!params.searchDate){ return param}
+                if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
                     if (!obj.value) { continue; }
-                    param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                    param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
                 }
                 return param;
             },
             loadReportData(level) {
                 let sql = this.prop.sqls;
-                if(!sql || !this.params){return;}
+                if (!sql || !this.url || !this.params) { this.loading = false; return; }
                 let param = this.getParams(this.params);
-                if(this.sqlFlag){
+                if (this.sqlFlag) {
                     sql = this.sql2;
                 }
                 let groupby = sql.split("groupby")[1];
                 if (groupby) {
                     sql = sql.split("groupby")[0];
+                    sql = this.setRowSpanField(level,sql);
                 }
-                if(param){sql += param;}
-
+                if (param) { sql += param; }
                 if (groupby) {
+                    groupby = this.setRowSpanField(level,groupby);
                     groupby = ' group by ' + groupby;
                     sql += groupby;
                 }
-                if(!sql || !this.url){return;}
-                this.$requestData(this.url, 'post', { params: sql}).then(res => {
-                    if(!res.datas){return;}
-                    for(let obj of res.datas){
+                this.loading = true;
+                this.$requestData(this.url, 'post', { params: sql }).then(res => {
+                    this.loading = false;
+                    if (!res.datas) { return; }
+                    for (let obj of res.datas) {
                         obj.level = level;
                     }
-                    // this.tableData = res.datas; 
-                    // this.loadTableHead(level,true);
-                    console.log(res.datas);
+                    this.tableData = res.datas; 
+                    this.loadTableHead(level,true);
+                }).catch(() => {
+                    this.loading = false;
                 });
             },
-            loadTableHead(level,flag) {//动态加载表头
+            setRowSpanField(level,str){
+                let rowSpanFields = this.prop.config.rowSpanField;
+                if(!rowSpanFields.length || level == 1){return str;}
+                let field1 = rowSpanFields[0];
+                if(str.indexOf(field1) == -1){return str;}
+                let field2 = rowSpanFields[1];
+                if(field2 && level == 2){str = str.replace(field1,field1+","+field2);}
+                let field3 = rowSpanFields[2];
+                if(field2 && field3 && level == 3){str = str.replace(field1,field1+","+field2+","+field3);}
+                return str;
+            },
+            loadTableHead(level, flag) {//动态加载表头
                 let tableColumn = this.prop.config['items' + level];
                 this.tableColumns = tableColumn.concat(this.prop.config.items);
                 this.title = this.prop.config.title;
                 this.level = level;
-                this.tableData = this['tableData' + level];
                 if (this.level == 2) {
                     this.getSpanArr(this.tableData, 0, this.prop.config.rowSpanField[0]);
                 } else if (this.level == 3) {
                     this.getSpanArr(this.tableData, 0, this.prop.config.rowSpanField[0]);
                     this.getSpanArr(this.tableData, 1, this.prop.config.rowSpanField[1]);
                 }
-                if(!flag){
+                if (!flag) {
                     this.loadReportData(level);
-                }                
+                }
             },
             changeNode(index, type) {//下钻加载数据
                 if (index == 1 && this.level == 3 && type == 'close') {
@@ -431,6 +215,7 @@
     .head-title p {
         display: inline-grid;
     }
+
     .line-box {
         box-sizing: border-box;
         display: inline-grid;
@@ -438,12 +223,18 @@
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
     }
-    .max_height_390{
+
+    .max_height_390 {
         max-height: 460px;
         width: 100%;
     }
-    .el-table{
+
+    .el-table {
         position: unset !important;
         overflow: auto !important;
+    }
+
+    .el-button {
+        padding: 0 !important;
     }
 </style>

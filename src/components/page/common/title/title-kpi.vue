@@ -60,21 +60,11 @@
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
-                        if (obj.type && obj.operation != 'in') {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
                         }
-                        if (obj.type && obj.operation == 'in') {
-                            if (!obj.value.length && !Array.isArray(obj.value)) { continue; }
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
-                            let inValue = "";
-                            for (let value of obj.value) {
-                                if (!value) { continue; }
-                                inValue += "'" + value + "',";
-                            }
-                            inValue = inValue.substring(0, inValue.length - 1);
-                            if (inValue) {
-                                param += " (" + inValue + ")";
-                            }
+                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
                         //多sql情况下根据筛选器选择对应的sql
                         if (obj.tableField == "sqlFlag") {
@@ -96,19 +86,30 @@
                 if (this.sqlFlag) {
                     sql = this.sql2;
                 }
-                if (!sql || !this.url) { return; }
+                this.resetData();
+                if (!sql || !this.url) { this.loading = false;return; }
                 this.$requestData(this.url, 'post', { params: sql + param }).then(res => {
-                    if (!res.datas) { return; }
                     this.loading = false;
+                    if (!res.datas) { return; }
                     this.setData(res.datas);
+                }).catch(() => {
+                    this.loading = false;
                 });
+            },
+            resetData(){
+                for (let obj2 of this.items) {
+                    if (!obj2.children) { obj2.value = 0;continue;}
+                    for (let obj3 of obj2.children) {
+                        obj3.value = 0;
+                    }
+                }
             },
             setData(datas) {
                 for (let obj of datas) {
                     for (let obj2 of this.items) {
-                        if (!obj2.children) { obj2.value = obj[obj2.filedName];continue;}
+                        if (!obj2.children) { obj2.value = obj[obj2.filedName] ? obj[obj2.filedName] : 0 ;continue;}
                         for (let obj3 of obj2.children) {
-                            obj3.value = obj[obj3.filedName];
+                            obj3.value = obj[obj3.filedName] ? obj[obj3.filedName] : 0;
                         }
                     }
                 }

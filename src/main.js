@@ -4,6 +4,7 @@ import router from './router';
 import VCharts from 'v-charts';
 import echarts from "echarts";
 import ElementUI from 'element-ui';
+//import AFTableColumn from 'af-table-column';
 import 'element-ui/lib/theme-chalk/index.css'; // 默认主题
 // import './assets/css/theme-green/index.css'; // 浅绿色主题
 import './assets/css/icon.css';
@@ -14,8 +15,8 @@ import {setFinanceVal,setDecimalVal,getComponents} from './components/common/uti
 
 
 Vue.config.productionTip = false;
-
 Vue.use(ElementUI, {size: 'small'});
+//Vue.use(AFTableColumn);
 Vue.use(VCharts);
 
 Vue.prototype.$requestData = requestData;

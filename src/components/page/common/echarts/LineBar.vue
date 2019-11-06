@@ -63,21 +63,11 @@
                 if(params.searchSelect){
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
-                        if (obj.type && obj.operation != 'in') {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
                         }
-                        if(obj.type && obj.operation == 'in'){
-                            if(!obj.value.length && !Array.isArray(obj.value)){continue;}
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation;
-                            let inValue = "";
-                            for(let value of obj.value){
-                                if(!value){continue;}
-                                inValue += "'" + value + "',";
-                            }
-                            inValue = inValue.substring(0,inValue.length-1);
-                            if(inValue){
-                                param += " (" + inValue + ")";
-                            }
+                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
+                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
                         //多sql情况下根据筛选器选择对应的sql
                         if(obj.tableField == "sqlFlag"){
@@ -95,6 +85,7 @@
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
+                if(!sql || !this.url){this.loading = false; return;}
                 let param = this.getParams(params);
                 let groupby = '';
                 //判断单位为吨还是件
@@ -109,11 +100,12 @@
                 if (groupby) {
                     groupby = ' group by' + groupby;
                 }
-                if(!sql || !this.url){return;}
                 this.$requestData(this.url , 'post', { params: sql + param + groupby }).then(res => {
-                    if (!res.datas) { return; }
                     this.loading = false;
+                    if (!res.datas) { return; }
                     this.setData(res.datas);
+                }).catch(() => {
+                    this.loading = false;
                 });
             },
             setData(datas){

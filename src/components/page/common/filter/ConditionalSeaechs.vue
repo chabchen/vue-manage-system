@@ -1,5 +1,5 @@
 <template>
-    <div class="inline_block" :style="{width:searchData.conditionWidth}">
+    <div class="inline_block" :style="{width:searchData.conditionWidth}" v-loading="loading">
         <div class="inline_block ml_25" v-for="(ieo,index) in searchData.searchDate" :key="index">
             <div class="grid-content bg-purple" v-if="ieo.dataShow">
                 <div class="block">
@@ -14,7 +14,7 @@
             <div class="grid-content bg-purple" v-if="item.dataShow">
                 <div class="block">
                     <div class="demonstration">{{item.title}}</div>
-                    <async-load-comp :app="appUrl" :prop="{searchDatas:searchData.searchSelect,data:item}" />
+                    <async-load-comp :app="appUrl" :prop="{searchDatas:searchData.searchSelect,data:item,dataFlag:dataFlag,currentcomp:currentcomp}" />
                 </div>
             </div>
         </div>
@@ -34,6 +34,9 @@
         props: { prop: Object },
         data() {
             return {
+                loading: true,
+                currentcomp: "",
+                dataFlag: false,
                 appUrl: "",
                 searchData: {},
                 data: [],
@@ -50,19 +53,60 @@
             changeParams(newValue) {
                 if (!newValue) { return; }
                 this.params = newValue;
-                this.changeRadio(newValue)
+                this.changeRadio(newValue);
                 this.prop.params = "";
             }
         },
         created() {
             this.searchData = this.prop.config.searchData;
-            console.log(this.searchData);
             this.initFilterData();
         },
         methods: {
+            getPatrams(condition, data) {
+                if (Array.isArray(data.value)) {
+                    let inValue = " ('" + data.value.join("','") + "') ";;
+                    condition += " and " + data.tableField + " in " + inValue;
+                } else {
+                    condition += " and " + data.tableField + " = '" + data.value + "' ";
+                }
+                return condition;
+            },
+            parentSearchEvent(param) {
+                for (let obj of this.data) {
+                    if (!obj.sql || !obj.url || !obj.relationField) { continue; }
+                    if (param.field == obj.field) { continue; }
+                    if (param.relationField && param.relationField.indexOf(obj.field) > -1) { continue; }
+                    this.currentcomp = param.field+","+param.relationField; 
+                    let condition = "";
+                    if (param.value && param.value.length) {
+                        condition += this.getPatrams(condition, param);
+                    } else {
+                        for (let obj2 of this.data) {
+                            if (!obj2.value || !obj2.value.length || obj.relationField.indexOf(obj2.field) == -1) { continue;}
+                            if (obj2.field == obj.field) { continue; }
+                            condition += this.getPatrams(condition, obj2);
+                        }
+                    }
+                    obj.value = "";
+                    let str = obj.sql.split("1=1");
+                    let sql = str[0] + "1=1 " + condition + str[1];
+                    this.dataFlag = !this.dataFlag;
+                    requestData(obj.url, 'post', { params: sql }).then(res => {
+                        if (!res.datas || !res.datas.length) { return; }
+                        let options = [];
+                        for (let data of res.datas) {
+                            if (!data || !data.VAL) { continue; }
+                            options.push({ label: data.VAL, value: data.VAL });
+                        }
+                        obj.options = options;
+                        this.dataFlag = !this.dataFlag;
+                    });
+                }
+                
+            },
             //切换维度触发方法
-            changeRadio(newValue) {
-                for (let obj of newValue.searchSelect) {
+            changeRadio(params) {
+                for (let obj of params.searchSelect) {
                     if (obj.tableField != "reportType") { continue; }
                     if (obj.value == "月报") {
                         for (let item of this.searchData.searchDate) {
@@ -97,13 +141,14 @@
                         if (!res.datas || !res.datas.length) { return; }
                         let options = [];
                         for (let data of res.datas) {
-                            if (!data.VAL) { continue; }
+                            if (!data || !data.VAL) { continue; }
                             options.push({ label: data.VAL, value: data.VAL });
                         }
                         obj.options = options;
                         if (obj.value.length) { obj.value = res.datas[0].VAL; }
                     });
                 }
+                this.loading = false;
                 this.initDate();
                 //通过懒加载加载组件
                 this.data = this.searchData.searchSelect;
@@ -119,7 +164,7 @@
                 this.$parent.$parent.parentSearchEvent(param);
             },
             concatParams(sourceParams, targetParams) {
-                if(!sourceParams){return;}
+                if (!sourceParams) { return; }
                 let concatArr = [];
                 concatArr = sourceParams.concat(targetParams ? targetParams : []);
                 let temp = {};   //用于tableField判断重复
@@ -136,22 +181,23 @@
             initDate() {
                 let now = new Date();
                 let nowYear = now.getMonth() == 0 ? now.getFullYear() - 1 : now.getFullYear();
-                if(!this.searchData.searchDate){return;}
+                if (!this.searchData.searchDate) { return; }
                 for (let obj of this.searchData.searchDate) {
                     if (obj.dateType == "date" || obj.dateType == "daterange") {
-                        let nowMonth = now.getMonth() + 1;
-                        let nowDay = new Date(now.getTime() - 86400000).getDate();//减去一天获取前一天日期
-                        nowMonth = nowMonth < 10 ? '0'+nowMonth : nowMonth;
-                        nowDay = nowDay < 10 ? '0'+nowDay : nowDay;
-                        if(obj.dateType == "date"){obj.value = nowYear + "" + nowMonth+""+nowDay;continue;}
-                        obj.value = [nowYear + "" + nowMonth+""+nowDay,nowYear + "" + nowMonth+""+nowDay];
+                        let date = new Date(now.getTime() - 86400000);//减去一天获取前一天日期
+                        let nowMonth = date.getMonth() + 1;
+                        let nowDay = date.getDate();
+                        nowMonth = nowMonth < 10 ? '0' + nowMonth : nowMonth;
+                        nowDay = nowDay < 10 ? '0' + nowDay : nowDay;
+                        if (obj.dateType == "date") { obj.value = nowYear + "" + nowMonth + "" + nowDay; continue; }
+                        obj.value = [nowYear + "" + nowMonth + "" + nowDay, nowYear + "" + nowMonth + "" + nowDay];
                     }
                     if (obj.dateType == "month" || obj.dateType == "monthrange") {
                         let nowMonth = now.getMonth() == 0 ? 12 : now.getMonth();
-                        nowYear = now.getMonth() == 0 ? nowYear -1 : nowYear;
-                        nowMonth = nowMonth < 10 ? '0'+nowMonth : nowMonth;
-                        if(obj.dateType == "month"){obj.value = nowYear + "" + nowMonth;continue;}
-                        obj.value = [nowYear + "" + nowMonth,nowYear + "" + nowMonth];
+                        nowYear = now.getMonth() == 0 ? nowYear - 1 : nowYear;
+                        nowMonth = nowMonth < 10 ? '0' + nowMonth : nowMonth;
+                        if (obj.dateType == "month") { obj.value = nowYear + "" + nowMonth; continue; }
+                        obj.value = [nowYear + "" + nowMonth, nowYear + "" + nowMonth];
                     }
                 }
             },
