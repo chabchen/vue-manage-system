@@ -100,25 +100,15 @@
                 if (groupby) {
                     groupby = ' group by' + groupby;
                 }
+                this.chartData.rows = [];
                 this.$requestData(this.url , 'post', { params: sql + param + groupby }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
-                    this.setData(res.datas);
+                    this.chartData.rows = res.datas;
                 }).catch(() => {
                     this.loading = false;
                 });
             },
-            setData(datas){
-                this.chartData.rows = [];
-                let fields = this.chartData.fields;         
-                for(let obj of datas){
-                    let row = {};
-                    for(let field in fields){
-                        row[fields[field]] = obj[field];
-                    }
-                    this.chartData.rows.push(row);
-                }
-            }
         }
     }
 </script>

@@ -122,15 +122,13 @@
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
+                if (!sql || !this.url) { this.loading = false; return; }
                 let param = this.getParams(params);
                 if(param){sql += param;}
                 sql = sql.replace("reportDate",this.lastDay);
-                console.log(sql);
-                if (!sql || !this.url) { this.loading = false; return; }
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
-                    console.log(res.datas);
-                   // this.data = res.datas;
+                    this.data = res.datas;
                 }).catch(() => {
                     this.loading = false;
                 });
