@@ -61,6 +61,7 @@
              */
             registerAndsetOption(id, name, mapJson, flag) {
                 this.$echarts.registerMap(name, mapJson);
+                let legendData = this.geoMapData3.length ? ["伊利", "蒙牛", "共有"] : ["伊利", "蒙牛"];
                 this.myChart.setOption({
                     geo: {
                         map: 'china',
@@ -78,31 +79,16 @@
                         orient: 'vertical',
                         top: 'bottom',
                         left: 'right',
-                        data: ["伊利", "蒙牛", "共有"],
+                        data: legendData,
                         left: '25%',
                         top: '70%',
                         textStyle: {
                             color: '#4472C5',
                         }
                     },
-                    color: ['#FFFF00','#0000BF', '#D9001B'],
+                    color: ['#0000BF', '#D9001B','#FFFF00'],
                     series: [
-                        {
-                            name: '伊利',            // series名称
-                            type: 'scatter',          // series图表类型
-                            coordinateSystem: 'geo',  // series坐标系类型
-                            data: this.geoMapData,  // series数据内容
-                            symbolSize: 15,
-                            //控制显示文本
-                            label: {
-                                normal: {
-                                    show: false
-                                },
-                                emphasis: { show: false }
-                            },
-                            //series样式
-                            itemStyle: { emphasis: { borderColor: '#fff', borderWidth: 1 } }
-                        },
+                        
                         {
                             name: '蒙牛',            // series名称
                             type: 'scatter',          // series图表类型
@@ -123,6 +109,22 @@
                             type: 'scatter',          // series图表类型
                             coordinateSystem: 'geo',  // series坐标系类型
                             data: this.geoMapData3,  // series数据内容
+                            symbolSize: 15,
+                            //控制显示文本
+                            label: {
+                                normal: {
+                                    show: false
+                                },
+                                emphasis: { show: false }
+                            },
+                            //series样式
+                            itemStyle: { emphasis: { borderColor: '#fff', borderWidth: 1 } }
+                        },
+                        {
+                            name: '伊利',            // series名称
+                            type: 'scatter',          // series图表类型
+                            coordinateSystem: 'geo',  // series坐标系类型
+                            data: this.geoMapData,  // series数据内容
                             symbolSize: 15,
                             //控制显示文本
                             label: {

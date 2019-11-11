@@ -203,6 +203,9 @@
                         if (obj.dateType == "month") { obj.value = nowYear + "" + nowMonth; continue; }
                         obj.value = [nowYear + "" + nowMonth, nowYear + "" + nowMonth];
                     }
+                    if(obj.dateType == "year"){
+                        obj.value = [now.getFullYear() - 1,now.getFullYear() - 1];
+                    }
                 }
             },
         }

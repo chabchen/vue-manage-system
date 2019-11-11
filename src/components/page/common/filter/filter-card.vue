@@ -139,7 +139,7 @@
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
-                    this.setCardData(res.datas[0], i);
+                    this.setCardData(res.datas[0]);
                 }).catch(() => {
                     this.loading = false;
                 });
@@ -152,7 +152,7 @@
                     for (let obj3 of obj) { obj3.value = 0; }
                 }
             },
-            setCardData(datas, i) {
+            setCardData(datas) {
                 this.items.value = datas[this.items.fieldName] ? datas[this.items.fieldName] : 0;
                 if (!this.items.details) { return; }
                 for (let obj2 of this.items.details) {

@@ -89,7 +89,6 @@
                 return param;
             },
             loadReportData(params) {
-                debugger
                 let sql = this.prop.sqls;
                 if(!sql || !this.url){this.loading = false; return;}
                 let param = this.getParams(params);

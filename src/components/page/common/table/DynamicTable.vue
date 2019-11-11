@@ -89,6 +89,7 @@
                     if (Array.isArray(obj.value)) {
                         param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                         param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
+                        param += " and pchm.report_month = " + obj.value[1];
                     } else {
                         param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
                     }
@@ -126,6 +127,30 @@
                 }).catch(() => {
                     this.showTable = true;
                     this.loading = false;
+                });
+            },
+            loadReportData2(level) {
+                let sql = this.prop.sqls;
+                if (!sql || !this.url || !this.params) { this.loading = false; return; }
+                let param = this.getParams(this.params);
+                let groupby = sql.split("groupby")[1];
+                if (groupby) {
+                    sql = sql.split("groupby")[0];
+                    sql = this.setRowSpanField(level, sql);
+                }
+                if (param) { sql += param; }
+                if (groupby) {
+                    groupby = this.setRowSpanField(level, groupby);
+                    groupby = ' group by ' + groupby;
+                    sql += groupby;
+                }
+                this.loading = true;
+                this.$requestData(this.url, 'post', { params: sql1 }).then(res => {
+
+                    this.$requestData(this.url, 'post', { params: sql2 }).then(res => {
+
+                        this.loading = true;
+                    });
                 });
             },
             setRowSpanField(level, str) {
