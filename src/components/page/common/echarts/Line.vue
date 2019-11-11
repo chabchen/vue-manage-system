@@ -123,6 +123,13 @@
                     }
                     this.chartData.rows.push(row);
                 }
+                this.setToolTip(datas);
+            },
+            setToolTip(datas){
+                this.chartExtend[tooltip][formatter] = this.formatter(datas);
+            },
+            formatter(data){
+                return "122323";
             }
         }
     }

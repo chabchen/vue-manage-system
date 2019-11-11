@@ -19,17 +19,19 @@
                 params: '',
                 sourceParam: '',
                 geoMapData: [],
+                geoMapData2: [],
+                geoMapData3: [],
                 mapUrl: "",
                 style: { height: 800 + 'px' },
             }
-        },computed: {
+        }, computed: {
             changeParams() {
                 return this.prop.params;
             }
         },
         watch: {
             changeParams(newValue) {
-                if(!newValue){return;}
+                if (!newValue) { return; }
                 this.loadReportData(newValue.searchSelect);
                 this.params = newValue;
                 this.prop.params = "";
@@ -72,9 +74,21 @@
                             emphasis: { areaColor: 'rgba(48,56,69,0.8)' }//地图触发地区的背景颜色
                         }
                     },
+                    legend: {
+                        orient: 'vertical',
+                        top: 'bottom',
+                        left: 'right',
+                        data: ["伊利", "蒙牛", "共有"],
+                        left: '25%',
+                        top: '70%',
+                        textStyle: {
+                            color: '#4472C5',
+                        }
+                    },
+                    color: ['#FFFF00','#0000BF', '#D9001B'],
                     series: [
                         {
-                            name: 'name',            // series名称
+                            name: '伊利',            // series名称
                             type: 'scatter',          // series图表类型
                             coordinateSystem: 'geo',  // series坐标系类型
                             data: this.geoMapData,  // series数据内容
@@ -82,15 +96,40 @@
                             //控制显示文本
                             label: {
                                 normal: {
-                                    show: true,
-                                    formatter: function (params) {
-                                        if ("蒙牛,伊利,共有".indexOf(params.name) > -1) {
-                                            return '                ' + params.name;
-                                        }
-                                        return "";
-                                    }
+                                    show: false
                                 },
-                                emphasis: { show: true }
+                                emphasis: { show: false }
+                            },
+                            //series样式
+                            itemStyle: { emphasis: { borderColor: '#fff', borderWidth: 1 } }
+                        },
+                        {
+                            name: '蒙牛',            // series名称
+                            type: 'scatter',          // series图表类型
+                            coordinateSystem: 'geo',  // series坐标系类型
+                            data: this.geoMapData2,  // series数据内容
+                            symbolSize: 15,
+                            //控制显示文本
+                            label: {
+                                normal: {
+                                    show: false
+                                },
+                                emphasis: { show: false }
+                            },
+                            //series样式
+                            itemStyle: { emphasis: { borderColor: '#fff', borderWidth: 1 } }
+                        }, {
+                            name: '共有',            // series名称
+                            type: 'scatter',          // series图表类型
+                            coordinateSystem: 'geo',  // series坐标系类型
+                            data: this.geoMapData3,  // series数据内容
+                            symbolSize: 15,
+                            //控制显示文本
+                            label: {
+                                normal: {
+                                    show: false
+                                },
+                                emphasis: { show: false }
                             },
                             //series样式
                             itemStyle: { emphasis: { borderColor: '#fff', borderWidth: 1 } }
@@ -116,8 +155,7 @@
                             { start: 100, end: 200 },//YL
                             { start: 0, end: 100 }//GY
                         ],
-                        color: ['#0000BF', '#FFFF00','#D9001B'],//颜色从高到低依次渐变
-                        //color: ['#DB4504', '#4B7902', '#FF9D1E'],//颜色从高到低依次渐变
+                        color: ['#FFFF00','#0000BF', '#D9001B'],//颜色从高到低依次渐变
                         textStyle: { color: '#fff' }
                     }
                 });
@@ -135,11 +173,9 @@
                     param += " " + obj.type + " " + obj.tableField + " = '" + obj.value + "' ";
                 }
                 sql += param;
-                this.geoMapData = [
-                    { name: "蒙牛", value: [76.2, 26.3, 250] },
-                    { name: "伊利", value: [76.3, 24.3, 150] },
-                    { name: "共有", value: [76.3, 22.3, 50] }
-                ];
+                this.geoMapData = [];
+                this.geoMapData2 = [];
+                this.geoMapData3 = [];
                 this.$requestData('/report/list', 'post', { params: sql }).then(res => {
                     let data = res.datas && res.datas.length ? res.datas : [];
                     for (let obj of data) {
@@ -147,21 +183,22 @@
                         let longitude = obj.longitude_and_latitude.split(",")[0];
                         let latitude = obj.longitude_and_latitude.split(",")[1];
                         let value = [parseFloat(longitude), parseFloat(latitude)];
-                        if (obj.enterprise == 'MN') {
+                        if (obj.enterprise == 'YL') {
                             value.push(250);
-                        } else if (obj.enterprise == 'YL') {
+                            this.geoMapData.push({ name: obj.enterprise, value: value });
+                        } else if (obj.enterprise == 'MN') {
                             value.push(150);
+                            this.geoMapData2.push({ name: obj.enterprise, value: value });
                         } else {
                             value.push(50);
+                            this.geoMapData3.push({ name: obj.enterprise, value: value });
                         }
-                        this.geoMapData.push({ name: obj.enterprise, value: value });
                     }
-                    this.geoMapData = this.geoMapData;
                     this.mapChart();
                 })
-                    .catch(() => {
-                        this.mapChart();
-                    });
+                .catch(() => {
+                    this.mapChart();
+                });
             },
             mapChart() {
                 window.oncontextmenu = function (e) { e.preventDefault(); }

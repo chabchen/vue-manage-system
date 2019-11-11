@@ -3,24 +3,27 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border>
-            <template v-for="(col, index) in tableColumns">
-                <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
-                    <template v-for="(col2,index2) in col.children">
-                        <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable="col2.sortable" />
-                    </template>
-                </el-table-column>
-                <el-table-column v-else :key="index" :prop="col.prop" :label="col.label" :sortable="col.sortable" min-width="100px" show-overflow-tooltip>
-                    <template slot="header" slot-scope="scope">
-                        {{col.label}}
-                        <el-row v-show="col.event" style="float: right;line-height:0;">
-                            <el-button v-if="col.type == 'open'" @click="changeNode(scope.$index,col.type)" icon="el-icon-plus"></el-button>
-                            <el-button v-if="col.type == 'close'" @click="changeNode(scope.$index,col.type)" icon='el-icon-minus'></el-button>
-                        </el-row>
-                    </template>
-                </el-table-column>
-            </template>
-        </el-table>
+        <div v-if="showTable">
+            <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" max-height="460"
+                border>
+                <template v-for="(col, index) in tableColumns">
+                    <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
+                        <template v-for="(col2,index2) in col.children">
+                            <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable="col2.sortable" />
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-else :key="index" :prop="col.prop" :label="col.label" :sortable="col.sortable" min-width="100px" show-overflow-tooltip>
+                        <template slot="header" slot-scope="scope">
+                            {{col.label}}
+                            <el-row v-show="col.event" style="float: right;line-height:0;">
+                                <el-button v-if="col.type == 'open'" @click="changeNode(scope.$index,col.type)" icon="el-icon-plus"></el-button>
+                                <el-button v-if="col.type == 'close'" @click="changeNode(scope.$index,col.type)" icon='el-icon-minus'></el-button>
+                            </el-row>
+                        </template>
+                    </el-table-column>
+                </template>
+            </el-table>
+        </div>
     </div>
 </template>
 
@@ -33,6 +36,7 @@
                 params: '',
                 title: '',
                 widthData: '100%',
+                showTable: false,
                 showSummary: false,
                 rowspanData: {},
                 level: 1,
@@ -63,7 +67,6 @@
             this.showSummary = this.prop.config.showSummary;
             this.sql2 = this.prop.config.sql2;
             this.url = this.prop.config.url;
-            this.loadTableHead(this.prop.config.level);
         },
         methods: {
             getParams(params) {
@@ -83,7 +86,12 @@
                 if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
                     if (!obj.value) { continue; }
-                    param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                    if (Array.isArray(obj.value)) {
+                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
+                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
+                    } else {
+                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                    }
                 }
                 return param;
             },
@@ -97,36 +105,38 @@
                 let groupby = sql.split("groupby")[1];
                 if (groupby) {
                     sql = sql.split("groupby")[0];
-                    sql = this.setRowSpanField(level,sql);
+                    sql = this.setRowSpanField(level, sql);
                 }
                 if (param) { sql += param; }
                 if (groupby) {
-                    groupby = this.setRowSpanField(level,groupby);
+                    groupby = this.setRowSpanField(level, groupby);
                     groupby = ' group by ' + groupby;
                     sql += groupby;
                 }
                 this.loading = true;
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
+                    this.showTable = true;
                     this.loading = false;
                     if (!res.datas) { return; }
                     for (let obj of res.datas) {
                         obj.level = level;
                     }
-                    this.tableData = res.datas; 
-                    this.loadTableHead(level,true);
+                    this.tableData = res.datas;
+                    this.loadTableHead(level, true);
                 }).catch(() => {
+                    this.showTable = true;
                     this.loading = false;
                 });
             },
-            setRowSpanField(level,str){
-                let rowSpanFields = this.prop.config.rowSpanField;
-                if(!rowSpanFields.length || level == 1){return str;}
-                let field1 = rowSpanFields[0];
-                if(str.indexOf(field1) == -1){return str;}
-                let field2 = rowSpanFields[1];
-                if(field2 && level == 2){str = str.replace(field1,field1+","+field2);}
-                let field3 = rowSpanFields[2];
-                if(field2 && field3 && level == 3){str = str.replace(field1,field1+","+field2+","+field3);}
+            setRowSpanField(level, str) {
+                let mainFields = this.prop.config.mainField;
+                if (!mainFields.length || level == 1) { return str; }
+                let field1 = mainFields[0];
+                if (str.indexOf(field1) == -1) { return str; }
+                let field2 = mainFields[1];
+                if (field2 && level == 2) { str = str.replace(field1, field1 + "," + field2); }
+                let field3 = mainFields[2];
+                if (field2 && field3 && level == 3) { str = str.replace(field1, field1 + "," + field2 + "," + field3); }
                 return str;
             },
             loadTableHead(level, flag) {//动态加载表头
@@ -145,6 +155,7 @@
                 }
             },
             changeNode(index, type) {//下钻加载数据
+                this.showTable = false;
                 if (index == 1 && this.level == 3 && type == 'close') {
                     this.loadTableHead(2);
                 }
@@ -231,7 +242,6 @@
 
     .el-table {
         position: unset !important;
-        overflow: auto !important;
     }
 
     .el-button {

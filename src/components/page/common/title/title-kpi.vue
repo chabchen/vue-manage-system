@@ -107,9 +107,9 @@
             setData(datas) {
                 for (let obj of datas) {
                     for (let obj2 of this.items) {
-                        if (!obj2.children) { obj2.value = obj[obj2.filedName] ? obj[obj2.filedName] : 0 ;continue;}
+                        if (!obj2.children) { obj2.value = obj[obj2.fieldName] ? obj[obj2.fieldName] : 0 ;continue;}
                         for (let obj3 of obj2.children) {
-                            obj3.value = obj[obj3.filedName] ? obj[obj3.filedName] : 0;
+                            obj3.value = obj[obj3.fieldName] ? obj[obj3.fieldName] : 0;
                         }
                     }
                 }

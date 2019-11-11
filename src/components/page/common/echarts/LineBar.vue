@@ -79,11 +79,17 @@
                 if(!params.searchDate){ return param}
                 for (let obj of params.searchDate) {
                     if (!obj.value) { continue; }
-                    param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+                    if (Array.isArray(obj.value)) {
+                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
+                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
+                    } else {
+                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                    }
                 }
                 return param;
             },
             loadReportData(params) {
+                debugger
                 let sql = this.prop.sqls;
                 if(!sql || !this.url){this.loading = false; return;}
                 let param = this.getParams(params);
@@ -105,10 +111,28 @@
                     this.loading = false;
                     if (!res.datas) { return; }
                     this.chartData.rows = res.datas;
+                    this.setToolTip(res.datas);
                 }).catch(() => {
                     this.loading = false;
                 });
             },
+            setToolTip(datas){
+                if(!datas || !this.chartExtend.tooltip){return;}
+                let legendName = this.chartSettings.legendName
+                let name = this.chartData.columns[0];
+                this.chartExtend.tooltip.formatter = function(params){
+                    let str = ''
+                    for(let data of datas){
+                        if(!data || data[name] != params[0].name){continue}
+                        str += data[name] + "<br>"
+                        for(let field in data){
+                            if(field == name){continue;}
+                            str += legendName[field] + " : " + data[field] + "<br>"
+                        }
+                    }
+                    return str
+                }
+            }
         }
     }
 </script>

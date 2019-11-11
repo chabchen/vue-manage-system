@@ -132,6 +132,7 @@
                 }
             },
             initFilterData: async function () {
+                this.initDate();
                 for (let obj of this.searchData.searchSelect) {
                     if (!obj.sql || !obj.url) {
                         if (obj.value && obj.options.length) { obj.value = obj.options[0].value; }
@@ -148,12 +149,15 @@
                         if (obj.value.length) { obj.value = res.datas[0].VAL; }
                     });
                 }
+                
                 this.loading = false;
-                this.initDate();
                 //通过懒加载加载组件
                 this.data = this.searchData.searchSelect;
                 this.appUrl = "filter/filter-select";
-                this.searchEvent();
+                if(!this.searchData.hideSearchBtn){
+                    this.searchEvent();
+                }
+                
             },
             searchEvent() {
                 let param = {};

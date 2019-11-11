@@ -1,23 +1,23 @@
 <template>
     <div :style="{width:widthData,gridRow:'row-start 2 / row-end 3'}" class="wrapper" @click="routerTo" v-loading="loading">
         <div class="title_style">
-            <span class="blue_span" v-if="data.card_title"> </span>
-            <span>&nbsp&nbsp{{data.card_title}}</span>
+            <span class="blue_span" v-if="items.card_title"> </span>
+            <span>&nbsp&nbsp{{items.card_title}}</span>
         </div>
         <div class="wrap" style="height: 120px;">
             <div class="item" style="margin: auto">
                 <div class="c_title" style="text-align: center">
-                    {{data.label}}
-                    <i v-if="data.showChecked" class="checkbox" style="float: right;margin: 10px 25px 0 -25px;">
-                        <el-checkbox v-model="data.checked" />
+                    {{items.label}}
+                    <i v-if="items.showChecked" class="checkbox" style="float: right;margin: 10px 25px 0 -25px;">
+                        <el-checkbox v-model="items.checked" />
                     </i>
                 </div>
                 <div style="text-align: center;min-height: 30px;">
-                    <b>{{data.value}}</b>
-                    <i>{{data.unit}}</i>
+                    <b>{{items.value}}</b>
+                    <i>{{items.unit}}</i>
                 </div>
                 <div class="bottom">
-                    <template v-for="item in data.details">
+                    <template v-for="item in items.details">
                         <P>
                             <template v-for="obj in item">
                                 <span class="bottom-span">
@@ -51,7 +51,7 @@
             }
         },
         created() {
-            this.data = this.prop.config.items;
+            this.items = this.prop.config.items;
             this.url = this.prop.config.url;
             this.divDayFlag = this.prop.config.divDayFlag;
             if (this.prop.config.widthData) {
@@ -78,7 +78,7 @@
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
-                        if(obj.tableField == "reportType"){
+                        if (obj.tableField == "reportType") {
                             this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
                         }
                         if (obj.type && obj.tableField && Array.isArray(obj.value)) {
@@ -92,46 +92,74 @@
                 if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
                     if (!obj.value) { continue; }
-                    if(Array.isArray(obj.value)){
+                    if (Array.isArray(obj.value)) {
                         param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                         param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
                         this.getDays(obj.value);
-                    }else{
+                    } else {
                         param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
-                    }                    
+                    }
                 }
                 return param;
             },
-            getDays(dates){//获取选中的日期天数
+            getDays(dates) {//获取选中的日期天数
                 let start = dates[0];
                 let end = dates[1];
                 let startDate;
                 let endDate
-                if(this.reportType == "dayReport"){//日报
+                if (this.reportType == "dayReport") {//日报
                     this.lastDay = end;
-                    startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1,start.substring(6,8));
-                    endDate = new Date(end.substring(0,4),parseInt(end.substring(4,6))-1,end.substring(6,8));
-                }else{//月报
-                    startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1);
-                    endDate = new Date(end.substring(0,4),end.substring(4,6));
+                    startDate = new Date(start.substring(0, 4), parseInt(start.substring(4, 6)) - 1, start.substring(6, 8));
+                    endDate = new Date(end.substring(0, 4), parseInt(end.substring(4, 6)) - 1, end.substring(6, 8));
+                } else {//月报
+                    startDate = new Date(start.substring(0, 4), parseInt(start.substring(4, 6)) - 1);
+                    endDate = new Date(end.substring(0, 4), end.substring(4, 6));
                     let day = new Date(endDate.getTime() - 86400000).getDate();
                     this.lastDay = end + "" + day;
-                }           
-                let days = endDate.getTime() - startDate.getTime(); 
-    　　        this.days = parseInt(days / (1000 * 60 * 60 * 24))+1;
+                }
+                let days = endDate.getTime() - startDate.getTime();
+                this.days = parseInt(days / (1000 * 60 * 60 * 24)) + 1;
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
                 if (!sql || !this.url) { this.loading = false; return; }
                 let param = this.getParams(params);
-                if(param){sql += param;}
-                sql = sql.replace("reportDate",this.lastDay);
+                let groupby = sql.split("groupby")[1];
+                if (groupby) {
+                    sql = sql.split("groupby")[0];
+                }
+                if (param) { sql += param; }
+                if (groupby) {
+                    groupby = ' group by ' + groupby;
+                    sql += groupby;
+                }
+                sql = sql.replace("reportDate", this.lastDay);
+                this.resetData();
+                let i = 1;
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
-                    this.data = res.datas;
+                    if (!res.datas) { return; }
+                    this.setCardData(res.datas[0], i);
                 }).catch(() => {
                     this.loading = false;
                 });
+            },
+            resetData() {
+                if (!this.items) { return; }
+                this.items.value = 0;
+                if (!this.items.details) { return; }
+                for (let obj of this.items.details) {
+                    for (let obj3 of obj) { obj3.value = 0; }
+                }
+            },
+            setCardData(datas, i) {
+                this.items.value = datas[this.items.fieldName] ? datas[this.items.fieldName] : 0;
+                if (!this.items.details) { return; }
+                for (let obj2 of this.items.details) {
+                    for (let obj3 of obj2) {
+                        obj3.value = datas[obj3.fieldName] ? datas[obj3.fieldName] : 0;
+                    }
+                }
             },
             routerTo() {
                 if (!this.prop.config.indexId) { return; }
