@@ -34,6 +34,7 @@
             return {
                 loading: true,
                 params: '',
+                extendParam: '',
                 title: '',
                 widthData: '100%',
                 showTable: false,
@@ -85,11 +86,12 @@
                 }
                 if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
-                    if (!obj.value) { continue; }
+                    if (!obj.value || !obj.dataShow) { continue; }
                     if (Array.isArray(obj.value)) {
                         param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                         param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
-                        param += " and pchm.report_month = " + obj.value[1];
+                        //针对【保健分析-发病率&淘汰率】处理的
+                        this.extendParam = " " + obj.type + " report_month" + " = " + obj.value[1];
                     } else {
                         param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
                     }
@@ -99,6 +101,10 @@
             loadReportData(level) {
                 let sql = this.prop.sqls;
                 if (!sql || !this.url || !this.params) { this.loading = false; return; }
+                if(this.prop.config.special){
+                    this.loadReportData2(level);
+                   return;
+                }               
                 let param = this.getParams(this.params);
                 if (this.sqlFlag) {
                     sql = this.sql2;
@@ -129,28 +135,36 @@
                     this.loading = false;
                 });
             },
-            loadReportData2(level) {
+            loadReportData2(level) {//针对【保健分析-发病率&淘汰率】处理的
                 let sql = this.prop.sqls;
-                if (!sql || !this.url || !this.params) { this.loading = false; return; }
+                this.extendParam = "";
                 let param = this.getParams(this.params);
-                let groupby = sql.split("groupby")[1];
-                if (groupby) {
-                    sql = sql.split("groupby")[0];
-                    sql = this.setRowSpanField(level, sql);
-                }
-                if (param) { sql += param; }
-                if (groupby) {
-                    groupby = this.setRowSpanField(level, groupby);
-                    groupby = ' group by ' + groupby;
-                    sql += groupby;
+                let params2 = {searchSelect:this.params.searchSelect};
+                let param2 = this.getParams(params2);
+                let newSql = sql.replace("1=1","1=1 "+param).replace("2=2","2=2 "+param2+this.extendParam);
+                if(level > 1){
+                   
+                    let str = this.setRowSpanField(level,this.prop.config.mainField[0]);
+                    let arr = newSql.split(this.prop.config.mainField[0]);
+                    newSql = "";
+                    for(let i = 0 ;i< arr.length-1;i++){
+                        newSql += arr[i] + str
+                    }
+                   
                 }
                 this.loading = true;
-                this.$requestData(this.url, 'post', { params: sql1 }).then(res => {
-
-                    this.$requestData(this.url, 'post', { params: sql2 }).then(res => {
-
-                        this.loading = true;
-                    });
+                this.$requestData(this.url, 'post', { params: newSql }).then(res => {
+                    this.showTable = true;
+                    this.loading = false;
+                    if (!res.datas) { return; }
+                    for (let obj of res.datas) {
+                        obj.level = level;
+                    }
+                    this.tableData = res.datas;
+                    this.loadTableHead(level, true);
+                }).catch(() => {
+                    this.showTable = true;
+                    this.loading = false;
                 });
             },
             setRowSpanField(level, str) {

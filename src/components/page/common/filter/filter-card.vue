@@ -91,7 +91,7 @@
                 }
                 if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
-                    if (!obj.value) { continue; }
+                    if (!obj.value || !obj.dataShow) { continue; }
                     if (Array.isArray(obj.value)) {
                         param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                         param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
@@ -146,18 +146,18 @@
             },
             resetData() {
                 if (!this.items) { return; }
-                this.items.value = 0;
+                this.items.value = "";
                 if (!this.items.details) { return; }
                 for (let obj of this.items.details) {
-                    for (let obj3 of obj) { obj3.value = 0; }
+                    for (let obj3 of obj) { obj3.value = ""; }
                 }
             },
             setCardData(datas) {
-                this.items.value = datas[this.items.fieldName] ? datas[this.items.fieldName] : 0;
+                this.items.value = datas[this.items.fieldName] != null ? datas[this.items.fieldName] : "";
                 if (!this.items.details) { return; }
                 for (let obj2 of this.items.details) {
                     for (let obj3 of obj2) {
-                        obj3.value = datas[obj3.fieldName] ? datas[obj3.fieldName] : 0;
+                        obj3.value = datas[obj3.fieldName] != null ? datas[obj3.fieldName] : "";
                     }
                 }
             },

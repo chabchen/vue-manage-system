@@ -5,7 +5,7 @@
                 <p>{{selectData.title}}</p>
                 <div v-show="selectData.showSelect" class="lineBar-select">
                     {{selectData.label}}
-                    <el-select v-model="selectData.value" placeholder="请选择">
+                    <el-select v-model="selectData.value" @change="changeSelect" placeholder="请选择">
                         <el-option v-for="item in selectData.options" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
@@ -78,7 +78,7 @@
                 }
                 if(!params.searchDate){ return param}
                 for (let obj of params.searchDate) {
-                    if (!obj.value) { continue; }
+                    if (!obj.value || !obj.dataShow) { continue; }
                     if (Array.isArray(obj.value)) {
                         param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                         param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
@@ -131,6 +131,9 @@
                     }
                     return str
                 }
+            },
+            changeSelect(value){
+                this.chartData.columns = this.chartData.columnsObj[value]
             }
         }
     }

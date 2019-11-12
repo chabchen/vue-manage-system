@@ -4,9 +4,9 @@
             <div class="grid-content bg-purple" v-if="ieo.dataShow">
                 <div class="block">
                     <div class="demonstration">{{ieo.title}}</div>
-                    <el-date-picker class="rangeDate" v-model="ieo.value" :type="ieo.dateType" :format="ieo.showFormat" :value-format="ieo.valueFormat"
-                        range-separator="至" start-placeholder="开始" end-placeholder="结束" placeholder="选择日期" :style="{width:ieo.dateType == 'date' || ieo.dateType == 'month' ? '158px' : '220px' }"
-                    />
+                    <el-date-picker class="rangeDate" v-model="ieo.value" :clearable="ieo.clearable" :type="ieo.dateType" :format="ieo.showFormat"
+                        :value-format="ieo.valueFormat" range-separator="至" start-placeholder="开始" end-placeholder="结束" placeholder="选择日期"
+                        :style="{width:ieo.dateType == 'date' || ieo.dateType == 'month' ? '158px' : '220px' }" />
                 </div>
             </div>
         </div>
@@ -14,7 +14,8 @@
             <div class="grid-content bg-purple" v-if="item.dataShow">
                 <div class="block">
                     <div class="demonstration">{{item.title}}</div>
-                    <async-load-comp :app="appUrl" :prop="{searchDatas:searchData.searchSelect,data:item,dataFlag:dataFlag,currentcomp:currentcomp}" />
+                    <async-load-comp :app="appUrl" :prop="{searchDatas:searchData.searchSelect,data:item,dataFlag:dataFlag,currentcomp:currentcomp}"
+                    />
                 </div>
             </div>
         </div>
@@ -76,13 +77,13 @@
                     if (!obj.sql || !obj.url || !obj.relationField) { continue; }
                     if (param.field == obj.field) { continue; }
                     if (param.relationField && param.relationField.indexOf(obj.field) > -1) { continue; }
-                    this.currentcomp = param.field+","+param.relationField; 
+                    this.currentcomp = param.field + "," + param.relationField;
                     let condition = "";
                     if (param.value && param.value.length) {
                         condition += this.getPatrams(condition, param);
                     } else {
                         for (let obj2 of this.data) {
-                            if (!obj2.value || !obj2.value.length || obj.relationField.indexOf(obj2.field) == -1) { continue;}
+                            if (!obj2.value || !obj2.value.length || obj.relationField.indexOf(obj2.field) == -1) { continue; }
                             if (obj2.field == obj.field) { continue; }
                             condition += this.getPatrams(condition, obj2);
                         }
@@ -102,34 +103,44 @@
                         this.dataFlag = !this.dataFlag;
                     });
                 }
-                
+
             },
+            //切换维度触发方法
+            // changeRadio(params) {
+            //     for (let obj of params.searchSelect) {
+            //         if (obj.tableField != "reportType") { continue; }
+            //         if (obj.value == "月报") {
+            //             for (let item of this.searchData.searchDate) {
+            //                 item.dateType = item.dateType == 'date' ? 'month' : 'monthrange';
+            //                 item.showFormat = 'yyyy-MM'
+            //                 item.valueFormat = 'yyyyMM'
+            //             }
+            //         }
+            //         if (obj.value == "日报") {
+            //             for (let item of this.searchData.searchDate) {
+            //                 item.dateType = item.dateType == 'month' ? 'date' : 'daterange';
+            //                 item.showFormat = 'yyyy-MM-dd'
+            //                 item.valueFormat = 'yyyyMMdd'
+            //             }
+            //         }
+            //         if (obj.value == "年报") {
+            //             for (let item of this.searchData.searchDate) {
+            //                 item.dateType = 'year';
+            //                 item.showFormat = 'yyyy'
+            //                 item.valueFormat = 'yyyy'
+            //             }
+            //         }
+            //     }
+            // },
             //切换维度触发方法
             changeRadio(params) {
                 for (let obj of params.searchSelect) {
                     if (obj.tableField != "reportType") { continue; }
-                    if (obj.value == "月报") {
-                        for (let item of this.searchData.searchDate) {
-                            item.dateType = item.dateType == 'date' ? 'month' : 'monthrange';
-                            item.showFormat = 'yyyy-MM'
-                            item.valueFormat = 'yyyyMM'
-                        }
-                    }
-                    if (obj.value == "日报") {
-                        for (let item of this.searchData.searchDate) {
-                            item.dateType = item.dateType == 'month' ? 'date' : 'daterange';
-                            item.showFormat = 'yyyy-MM-dd'
-                            item.valueFormat = 'yyyyMMdd'
-                        }
-                    }
-                    if (obj.value == "年报") {
-                        for (let item of this.searchData.searchDate) {
-                            item.dateType = 'year';
-                            item.showFormat = 'yyyy'
-                            item.valueFormat = 'yyyy'
-                        }
+                    for (let item of this.searchData.searchDate) {
+                        item.dataShow = !item.dataShow;
                     }
                 }
+                this.searchEvent();
             },
             initFilterData: async function () {
                 this.initDate();
@@ -149,15 +160,14 @@
                         if (obj.value.length) { obj.value = res.datas[0].VAL; }
                     });
                 }
-                
+
                 this.loading = false;
                 //通过懒加载加载组件
                 this.data = this.searchData.searchSelect;
                 this.appUrl = "filter/filter-select";
-                if(!this.searchData.hideSearchBtn){
+                if (!this.searchData.hideSearchBtn) {
                     this.searchEvent();
                 }
-                
             },
             searchEvent() {
                 let param = {};
@@ -183,6 +193,7 @@
             },
             //初始化设置时间
             initDate() {
+                debugger
                 let now = new Date();
                 let nowYear = now.getMonth() == 0 ? now.getFullYear() - 1 : now.getFullYear();
                 if (!this.searchData.searchDate) { return; }
@@ -203,8 +214,8 @@
                         if (obj.dateType == "month") { obj.value = nowYear + "" + nowMonth; continue; }
                         obj.value = [nowYear + "" + nowMonth, nowYear + "" + nowMonth];
                     }
-                    if(obj.dateType == "year"){
-                        obj.value = [now.getFullYear() - 1,now.getFullYear() - 1];
+                    if (obj.dateType == "year") {
+                        obj.value = [now.getFullYear() - 1, now.getFullYear() - 1];
                     }
                 }
             },

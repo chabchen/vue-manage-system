@@ -67,6 +67,7 @@
                     if (!obj.value) { continue }
                     this.selectData.value.push(obj.value)
                 }
+                this.selectChange();
             },
             check_other() {
                 if (!this.selectData.value.length) {
@@ -82,6 +83,7 @@
                 if (!newValue.length) {
                     this.selectData.checkboxValue = false;
                 }
+                this.selectChange();
             }
         },
         computed: {

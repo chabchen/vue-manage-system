@@ -5,7 +5,7 @@
                 <p>{{selectData.title}}</p>
                 <div v-show="selectData.showSelect" class="line-select">
                     {{selectData.label}}
-                    <el-select v-model="selectData.value" placeholder="请选择">
+                    <el-select v-model="selectData.value" @change="changeSelect" placeholder="请选择">
                         <el-option v-for="item in selectData.options" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
@@ -37,6 +37,7 @@
             this.chartExtend = this.prop.config.chartExtend;
             this.chartSettings = this.prop.config.chartSettings;
             this.sql2 = this.prop.config.sql2;
+            this.url = this.prop.config.url;
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
             }
@@ -74,7 +75,7 @@
                 }
                 if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
-                    if (!obj.value) { continue; }
+                    if (!obj.value || !obj.dataShow) { continue; }
                     if(Array.isArray(obj.value)){
                         param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                         param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
@@ -130,6 +131,9 @@
             },
             formatter(data){
                 return "122323";
+            },
+            changeSelect(value){
+                this.chartData.columns = this.chartData.columnsObj[value]
             }
         }
     }

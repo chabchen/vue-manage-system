@@ -75,7 +75,7 @@
                 }
                 if (!params.searchDate) { return param }
                 for (let obj of params.searchDate) {
-                    if (!obj.value) { continue; }
+                    if (!obj.value || !obj.dataShow) { continue; }
                     param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                 }
                 return param;
