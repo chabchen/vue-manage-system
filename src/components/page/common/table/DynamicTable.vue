@@ -3,9 +3,8 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <div v-if="showTable">
-            <el-table class="max_height_390" :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" max-height="460"
-                border>
+        <div style="overflow: auto;" v-if="showTable">
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border max-height="460" >
                 <template v-for="(col, index) in tableColumns">
                     <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
                         <template v-for="(col2,index2) in col.children">

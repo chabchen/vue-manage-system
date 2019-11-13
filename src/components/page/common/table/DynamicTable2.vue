@@ -3,12 +3,12 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <div v-if="showTable">
-            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" stripe border style="width: 107em" max-height="460">
+        <div style="overflow: auto;" v-if="showTable">
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" stripe border max-height="460">
                 <template v-for="(col, index) in tableColumns">
                     <el-table-column width="150" v-if="col.children" :prop="col.prop" :label="col.label" align="center">
                         <template v-for="(col2,index2) in col.children">
-                            <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable="col2.sortable"/>
+                            <el-table-column :key="index2" :prop="col2.prop" :label="col2.label" :sortable="col2.sortable" />
                         </template>
                     </el-table-column>
                     <el-table-column v-else :key="index" :prop="col.prop" :label="col.label" :sortable="col.sortable" min-width="100px" show-overflow-tooltip>
@@ -96,8 +96,9 @@
             },
             loadReportData(level) {
                 this.tableData = [];
+                let concatFields = this.prop.config.concatFields;
                 let sql = this.prop.sqls;
-                if (!sql || !this.params || !this.url) { this.loading = false;return; }
+                if (!sql || !this.params || !this.url) { this.loading = false; return; }
                 let param = this.getParams(this.params);
                 if (this.sqlFlag && this.sql2) {
                     sql = this.sql2;
@@ -120,6 +121,14 @@
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
+                    if (concatFields && concatFields.length) {
+                        for (let row of res.datas) {
+                            for (let field in row) {
+                                if (!row[field] || concatFields.indexOf(field) == -1) { continue; }
+                                row[field] = row[field] + "%";
+                            }
+                        }
+                    }
                     this.tableData = res.datas;
                     this.showTable = true;
                     this.loadTableHead(level, true);
@@ -158,9 +167,6 @@
                 }
             },
             objectSpanMethod({ row, column, rowIndex, columnIndex }) {//动态合并行
-                for(let field in row){
-                    if(row[field] == "%" || row[field] == ".00%" || row[field] == ".0%"){row[field] = '0%';}
-                }
                 if (columnIndex === 0) {
                     let _row = this.rowspanData['spanArr' + columnIndex][rowIndex];
                     let _col = _row > 0 ? 1 : 0;
@@ -235,7 +241,8 @@
     .has-gutter .gutter {
         display: block !important;
     }
-    .auto_div{
+
+    .auto_div {
         height: 460px;
         width: 1300px;
     }

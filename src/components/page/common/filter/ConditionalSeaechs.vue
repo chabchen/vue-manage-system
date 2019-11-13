@@ -106,41 +106,31 @@
 
             },
             //切换维度触发方法
-            // changeRadio(params) {
-            //     for (let obj of params.searchSelect) {
-            //         if (obj.tableField != "reportType") { continue; }
-            //         if (obj.value == "月报") {
-            //             for (let item of this.searchData.searchDate) {
-            //                 item.dateType = item.dateType == 'date' ? 'month' : 'monthrange';
-            //                 item.showFormat = 'yyyy-MM'
-            //                 item.valueFormat = 'yyyyMM'
-            //             }
-            //         }
-            //         if (obj.value == "日报") {
-            //             for (let item of this.searchData.searchDate) {
-            //                 item.dateType = item.dateType == 'month' ? 'date' : 'daterange';
-            //                 item.showFormat = 'yyyy-MM-dd'
-            //                 item.valueFormat = 'yyyyMMdd'
-            //             }
-            //         }
-            //         if (obj.value == "年报") {
-            //             for (let item of this.searchData.searchDate) {
-            //                 item.dateType = 'year';
-            //                 item.showFormat = 'yyyy'
-            //                 item.valueFormat = 'yyyy'
-            //             }
-            //         }
-            //     }
-            // },
-            //切换维度触发方法
             changeRadio(params) {
+                let flag = false;
                 for (let obj of params.searchSelect) {
-                    if (obj.tableField != "reportType") { continue; }
-                    for (let item of this.searchData.searchDate) {
-                        item.dataShow = !item.dataShow;
+                    if (obj.tableField != "reportType" || !this.searchData.searchDate) { continue; }
+                    if (obj.value == "月报" && this.searchData.searchDate.length) {
+                        for (let item of this.searchData.searchDate) {
+                            if(item.dateType != "month" && item.dateType != "monthrange"){item.dataShow = false;continue;}
+                            item.dataShow = true;
+                        }
                     }
+                    if (obj.value == "日报" && this.searchData.searchDate.length) {
+                        for (let item of this.searchData.searchDate) {
+                            if(item.dateType != "date" && item.dateType != "daterange"){item.dataShow = false;continue;}
+                            item.dataShow = true;
+                        }
+                    }
+                    if (obj.value == "年报" && this.searchData.searchDate.length) {
+                        for (let item of this.searchData.searchDate) {
+                            if(item.dateType != "year"){item.dataShow = false;continue;}
+                            item.dataShow = true;
+                        }
+                    }
+                    flag = true;
                 }
-                this.searchEvent();
+                if(flag){this.searchEvent();}
             },
             initFilterData: async function () {
                 this.initDate();
@@ -193,7 +183,6 @@
             },
             //初始化设置时间
             initDate() {
-                debugger
                 let now = new Date();
                 let nowYear = now.getMonth() == 0 ? now.getFullYear() - 1 : now.getFullYear();
                 if (!this.searchData.searchDate) { return; }

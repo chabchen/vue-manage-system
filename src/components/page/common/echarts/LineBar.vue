@@ -29,6 +29,7 @@
                 widthData: '50%',
                 params: '',
                 sqlFlag: false,
+                fieldFlag: "",
                 url: ''
             }
         },
@@ -79,6 +80,11 @@
                 if(!params.searchDate){ return param}
                 for (let obj of params.searchDate) {
                     if (!obj.value || !obj.dataShow) { continue; }
+                    //根据维度切换对应的sql
+                    if(this.fieldFlag && this.fieldFlag != obj.tableField){
+                        this.sqlFlag = !this.sqlFlag;
+                    }
+                    this.fieldFlag = obj.tableField;
                     if (Array.isArray(obj.value)) {
                         param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                         param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
