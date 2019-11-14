@@ -33,8 +33,8 @@
                 params: "",
                 url: "",
                 reportType: "dayReport",
-                divDayFlag: false,//是否需要除以天数
-                days: "",
+                sqlFlag: false,
+                fieldFlag: "",
             }
         },
         created() {
@@ -60,78 +60,41 @@
             }
         },
         methods: {
-            getParams(params) {
-                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
-                let param = "";
+            getSqlFlag(params) { //根据维度切换对应的sql
+                if (!params || (!params.searchDate && params.searchSelect)) { return; }
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
-                        if (!obj.value || !obj.value.length) { continue; }
-                        if(obj.tableField == "reportType"){
-                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
-                        }
-                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
-                        }
-                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
-                        }
+                        if (obj.tableField != "sqlFlag") { continue; }
+                        this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if (!params.searchDate) { return param }
+                if(!params.searchDate){return;}
                 for (let obj of params.searchDate) {
-                    if (!obj.value || !obj.dataShow) { continue; }
-                    if(obj.value instanceof Array){
-                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
-                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
-                        this.getDays(obj.value);
-                    }else{
-                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
-                    }                    
+                    if (!obj.dataShow) { continue; }
+                    if (this.fieldFlag && this.fieldFlag != obj.tableField) {
+                        this.sqlFlag = !this.sqlFlag;
+                    }
+                    this.fieldFlag = obj.tableField;
                 }
-                return param;
-            },
-            getDays(dates){//获取选中的日期天数
-                let start = dates[0];
-                let end = dates[1];
-                let startDate;
-                let endDate
-                if(this.reportType == "dayReport"){//日报
-                    this.lastDay = end;
-                    startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1,start.substring(6,8));
-                    endDate = new Date(end.substring(0,4),parseInt(end.substring(4,6))-1,end.substring(6,8));
-                }else{//月报
-                    startDate = new Date(start.substring(0,4),parseInt(start.substring(4,6))-1);
-                    endDate = new Date(end.substring(0,4),end.substring(4,6));
-                    let day = new Date(endDate.getTime() - 86400000).getDate();
-                }           
-                let days = endDate.getTime() - startDate.getTime(); 
-    　　        this.days = parseInt(days / (1000 * 60 * 60 * 24))+1;
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
-                let param = this.getParams(params);
-                if(param){sql += param;}
-                if (!sql || !this.url) { this.loading = false;return; }
-                this.$requestData(this.url, 'post', { params: sql }).then(res => {
+                if (!sql || !this.url) { this.loading = false; return; }
+                this.getSqlFlag(params);
+                if (this.sqlFlag) { sql = this.sql2; }
+                let newSql = this.$setParams(sql, params);
+                this.chartData.rows = [];
+                this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.loading = false;
-                    if(!res.datas){return;}
-                    console.log(res.datas);
-                   // this.data = res.datas;
+                    if (!res.datas) { return; }
+                    this.chartData.rows = res.datas;
+                    this.setToolTip(res.datas);
                 }).catch(() => {
                     this.loading = false;
                 });
             },
-            setData(datas){
-                this.chartData.rows = [];
-                let fields = this.chartData.fields;
-                for(let obj of datas){
-                    let row = {key:"",value:""};
-                    for(let field in fields){
-                        row.key = fields[field];
-                        row.value = obj.field / this.days;
-                    }
-                    this.chartData.rows.push(row);
-                }
+            setToolTip(datas) {
+                
             }
         }
     }

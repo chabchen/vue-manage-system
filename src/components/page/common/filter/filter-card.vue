@@ -45,15 +45,15 @@
                 params: "",
                 url: "",
                 reportType: "dayReport",
-                divDayFlag: false,//是否需要除以天数
                 days: "",
                 lastDay: "",
+                sqlFlag: false,
+                fieldFlag: "",
             }
         },
         created() {
             this.items = this.prop.config.items;
             this.url = this.prop.config.url;
-            this.divDayFlag = this.prop.config.divDayFlag;
             if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
             }
@@ -72,37 +72,30 @@
             }
         },
         methods: {
-            getParams(params) {
-                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
-                let param = "";
+            getSqlFlag(params) { //根据维度切换对应的sql
+                if (!params || (!params.searchDate && params.searchSelect)) { return; }
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
-                        if (!obj.value || !obj.value.length) { continue; }
-                        if (obj.tableField == "reportType") {
-                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
-                        }
-                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
-                        }
-                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
-                        }
+                        // if (obj.tableField == "reportType") {//奶量分析求日均值
+                        //     this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
+                        // }
+                        if (obj.tableField != "sqlFlag") { continue; }
+                        this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if (!params.searchDate) { return param }
+                if(!params.searchDate){return;}
                 for (let obj of params.searchDate) {
-                    if (!obj.value || !obj.dataShow) { continue; }
-                    if (Array.isArray(obj.value)) {
-                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
-                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
-                        this.getDays(obj.value);
-                    } else {
-                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                    if (!obj.dataShow) { continue; }
+                    if (this.fieldFlag && this.fieldFlag != obj.tableField) {
+                        this.sqlFlag = !this.sqlFlag;
                     }
+                    this.fieldFlag = obj.tableField;
+                    //奶量分析求日均值
+                    //if (Array.isArray(obj.value)) { this.getDays(obj.value);}
                 }
-                return param;
             },
             getDays(dates) {//获取选中的日期天数
+                if(!dates){return;}
                 let start = dates[0];
                 let end = dates[1];
                 let startDate;
@@ -123,20 +116,12 @@
             loadReportData(params) {
                 let sql = this.prop.sqls;
                 if (!sql || !this.url) { this.loading = false; return; }
-                let param = this.getParams(params);
-                let groupby = sql.split("groupby")[1];
-                if (groupby) {
-                    sql = sql.split("groupby")[0];
-                }
-                if (param) { sql += param; }
-                if (groupby) {
-                    groupby = ' group by ' + groupby;
-                    sql += groupby;
-                }
-                sql = sql.replace("reportDate", this.lastDay);
+                this.getSqlFlag(params);
+                if (this.sqlFlag) { sql = this.sql2; }
+                //sql = sql.replace("reportDate", this.lastDay);//奶量分析求日均值
+                let newSql = this.$setParams(sql, params);
                 this.resetData();
-                let i = 1;
-                this.$requestData(this.url, 'post', { params: sql }).then(res => {
+                this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
                     this.setCardData(res.datas[0]);

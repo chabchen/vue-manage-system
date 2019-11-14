@@ -29,6 +29,8 @@
                 params: '',
                 reportType: "dayReport",
                 sql2: "",
+                sqlFlag: false,
+                fieldFlag: "",
             }
         },
         created() {
@@ -56,54 +58,34 @@
             }
         },
         methods: {
-            getParams(params) {
-                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
-                let param = "";
+            getSqlFlag(params) { //根据维度切换对应的sql
+                if (!params || (!params.searchDate && params.searchSelect)) { return; }
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
-                        if (!obj.value || !obj.value.length) { continue; }
-                        if(obj.tableField == "reportType"){
-                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
-                        }
-                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
-                        }
-                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
-                        }
+                        if (obj.tableField != "sqlFlag") { continue; }
+                        this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if (!params.searchDate) { return param }
+                if(!params.searchDate){return;}
                 for (let obj of params.searchDate) {
-                    if (!obj.value || !obj.dataShow) { continue; }
-                    if(Array.isArray(obj.value)){
-                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
-                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
-                    }else{
-                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
-                    }                    
+                    if (!obj.dataShow) { continue; }
+                    if (this.fieldFlag && this.fieldFlag != obj.tableField) {
+                        this.sqlFlag = !this.sqlFlag;
+                    }
+                    this.fieldFlag = obj.tableField;
                 }
-                return param;
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
-                if(!sql || !this.url){this.loading = false;return;}
-                let param = this.getParams(params);
-                let groupby = '';
-                if(this.reportType == "monthReport" && this.sql2){
-                    groupby = this.sql2.split("groupby")[1];
-                    sql = this.sql2.split("groupby")[0];
-                }else{
-                    groupby = sql.split("groupby")[1]
-                    sql = sql.split("groupby")[0];
-                }
-                //判断是否存在groupby
-                if (groupby) {
-                    groupby = ' group by' + groupby;
-                }
-                this.$requestData(this.url , 'post', { params: sql + param + groupby }).then(res => {
+                if (!sql || !this.url) { this.loading = false; return; }
+                this.getSqlFlag(params);
+                if (this.sqlFlag) { sql = this.sql2; }
+                let newSql = this.$setParams(sql, params);
+                this.chartData.rows = [];
+                this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.loading = false;
-                    if (!res.datas) {return;}
+                    if (!res.datas) { return; }
+                    this.chartData.rows = res.datas;
                     this.setData(res.datas);
                 }).catch(() => {
                     this.loading = false;
@@ -127,10 +109,7 @@
                 this.setToolTip(datas);
             },
             setToolTip(datas){
-                this.chartExtend[tooltip][formatter] = this.formatter(datas);
-            },
-            formatter(data){
-                return "122323";
+                
             },
             changeSelect(value){
                 this.chartData.columns = this.chartData.columnsObj[value]

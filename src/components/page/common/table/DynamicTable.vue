@@ -42,6 +42,7 @@
                 level: 1,
                 url: "",
                 sqlFlag: false,
+                fieldFlag: "",
                 sql2: "",
                 tableColumns: [],
                 tableData: []
@@ -69,88 +70,65 @@
             this.url = this.prop.config.url;
         },
         methods: {
-            getParams(params) {
-                if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
-                let param = "";
+            getSqlFlag(params) { //根据维度切换对应的sql
+                if (!params || (!params.searchDate && params.searchSelect)) { return; }
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
-                        if (!obj.value || !obj.value.length) { continue; }
-                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
-                        }
-                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
-                        }
+                        if (obj.tableField != "sqlFlag") { continue; }
+                        this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if (!params.searchDate) { return param }
+                if(!params.searchDate){return;}
                 for (let obj of params.searchDate) {
-                    if (!obj.value || !obj.dataShow) { continue; }
-                    if (Array.isArray(obj.value)) {
-                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
-                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
-                        //针对【保健分析-发病率&淘汰率】处理的
-                        this.extendParam = " " + obj.type + " report_month" + " = " + obj.value[1];
-                    } else {
-                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                    if (!obj.dataShow) { continue; }
+                    if (this.fieldFlag && this.fieldFlag != obj.tableField) {
+                        this.sqlFlag = !this.sqlFlag;
+                    }
+                    this.fieldFlag = obj.tableField;
+                }
+            },
+            dynamicGroupBy(sql,level){
+                if(level == 1){
+                    sql = sql.replace("groupby","group by");
+                    sql = sql.replace("groupby","group by");
+                    sql = sql.replace("orderby","order by");
+                    return sql;
+                }
+                let selectArr = sql.split("select");
+                sql = selectArr[0] + "select";
+                for(let i = 1,j = selectArr.length;i<j;i++){
+                    sql += this.setRowSpanField(level, selectArr[i]);
+                    if(i < selectArr.length -1){
+                        sql += "select";
                     }
                 }
-                return param;
+                
+                let groupbyArr = sql.split("groupby");
+                let newSql = groupbyArr[0] + " group by ";
+                for(let i = 1,j = groupbyArr.length;i<j;i++){
+                    newSql += this.setRowSpanField(level, groupbyArr[i]);
+                    if(i < groupbyArr.length -1){
+                        newSql += "group by";
+                    }
+                }
+                let arr2 = newSql.split("orderby");
+                let mainFields = this.prop.config.mainField;
+                let field1 = mainFields[1];
+                let field2 = mainFields[2];
+                if(level == 2){
+                    newSql = arr2[0] + "and " + field1 + " = temp_table."+field1.split(".")[1] + " order by" + this.setRowSpanField(level, arr2[1]);
+                }else{
+                    newSql = arr2[0] + "and " + field2 + " = temp_table."+field2.split(".")[1] + " order by" + this.setRowSpanField(level, arr2[1]);
+                }                
+                return newSql;
             },
             loadReportData(level) {
                 let sql = this.prop.sqls;
-                if (!sql || !this.url || !this.params) { this.loading = false; return; }
-                if(this.prop.config.special){
-                    this.loadReportData2(level);
-                   return;
-                }               
-                let param = this.getParams(this.params);
-                if (this.sqlFlag) {
-                    sql = this.sql2;
-                }
-                let groupby = sql.split("groupby")[1];
-                if (groupby) {
-                    sql = sql.split("groupby")[0];
-                    sql = this.setRowSpanField(level, sql);
-                }
-                if (param) { sql += param; }
-                if (groupby) {
-                    groupby = this.setRowSpanField(level, groupby);
-                    groupby = ' group by ' + groupby;
-                    sql += groupby;
-                }
-                this.loading = true;
-                this.$requestData(this.url, 'post', { params: sql }).then(res => {
-                    this.showTable = true;
-                    this.loading = false;
-                    if (!res.datas) { return; }
-                    for (let obj of res.datas) {
-                        obj.level = level;
-                    }
-                    this.tableData = res.datas;
-                    this.loadTableHead(level, true);
-                }).catch(() => {
-                    this.showTable = true;
-                    this.loading = false;
-                });
-            },
-            loadReportData2(level) {//针对【保健分析-发病率&淘汰率】处理的
-                let sql = this.prop.sqls;
-                this.extendParam = "";
-                let param = this.getParams(this.params);
-                let params2 = {searchSelect:this.params.searchSelect};
-                let param2 = this.getParams(params2);
-                let newSql = sql.replace("1=1","1=1 "+param).replace("2=2","2=2 "+param2+this.extendParam);
-                if(level > 1){
-                   
-                    let str = this.setRowSpanField(level,this.prop.config.mainField[0]);
-                    let arr = newSql.split(this.prop.config.mainField[0]);
-                    newSql = "";
-                    for(let i = 0 ;i< arr.length-1;i++){
-                        newSql += arr[i] + str
-                    }
-                   
-                }
+                if (!sql || !this.url) { this.loading = false; return; }
+                this.getSqlFlag(this.params);
+                if (this.sqlFlag) { sql = this.sql2; }
+                sql = this.dynamicGroupBy(sql,level);
+                let newSql = this.$setParams(sql, this.params);
                 this.loading = true;
                 this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.showTable = true;
@@ -167,6 +145,7 @@
                 });
             },
             setRowSpanField(level, str) {
+                if(!str){return;}
                 let mainFields = this.prop.config.mainField;
                 if (!mainFields.length || level == 1) { return str; }
                 let field1 = mainFields[0];

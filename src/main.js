@@ -11,7 +11,7 @@ import './assets/css/icon.css';
 import './components/common/directives';
 import 'babel-polyfill';
 import { requestData } from './api/RequestData';
-import {setFinanceVal,setDecimalVal,getComponents} from './components/common/utils/common.js'
+import {setFinanceVal,setDecimalVal,getComponents,setParams} from './components/common/utils/common.js'
 
 
 Vue.config.productionTip = false;
@@ -26,7 +26,8 @@ Vue.prototype.$setFinanceVal = setFinanceVal;
 Vue.prototype.$setDecimalVal = setDecimalVal;
 //组件列表
 Vue.prototype.$getComponents = getComponents;
-
+//参数赋值
+Vue.prototype.$setParams = setParams;
 
 
 

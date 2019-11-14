@@ -58,4 +58,54 @@ export function getComponents() {
     return comps;
 }
 
+/**
+ * 
+ * @param {*} sql 
+ * @param {*} params 
+ * @param {*} fields 限制参数字段集 
+ * @param {*} lastDateFlag 取日期区间最后一个值
+ */
+export function setParams(sql,params,fields,lastDateFlag){
+    if(!sql || !params){return "";}
+    if (!params.searchSelect && !params.searchDate) { return ""; }
+    let param = "";
+    if (params.searchSelect) {//获取下拉框筛选器的值
+        for (let obj of params.searchSelect) {
+            if (!obj.value || !obj.value.length) { continue; }
+            if(fields && fields.length && fields.indexOf(obj.tableField) == -1){continue;}
+            if (obj.type && obj.tableField && Array.isArray(obj.value)) {
+                param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
+            }
+            if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
+                param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
+            }
+        }
+    }
+    if (!params.searchDate) { return concatParams(sql,param); }
+    for (let obj of params.searchDate) {//获取日期筛选器的值
+        if (!obj.value || !obj.value.length || !obj.dataShow) { continue; }
+        if(fields && fields.length && fields.indexOf(obj.tableField) == -1){continue;}
+        if (Array.isArray(obj.value)) {
+            if(lastDateFlag){
+                param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value[1];
+                continue;
+            }
+            param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
+            param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
+        } else {
+            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+        }
+    }
+    return concatParams(sql,param);
+}
 
+function concatParams(sql,param){
+    let sqlArr = sql.trim().split("1=1");
+    let newSql = "";
+    for(let i = 0,j = sqlArr.length -1;i<j;i++){
+        newSql += sqlArr[i] + " 1=1 "+param;
+    }
+    newSql = newSql + sqlArr[sqlArr.length-1];
+    newSql = newSql.replace("groupby","group by");
+    return newSql;
+}

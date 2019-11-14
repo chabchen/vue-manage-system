@@ -3,7 +3,7 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <el-table :data="tableData" class="max_height_390" border stripe :show-summary="showSummary" style="width: 107em" max-height="460">
+        <el-table :data="tableData" border stripe :show-summary="showSummary" style="width: 107em" max-height="460">
             <template v-for="(col, index) in tableColumns">
                 <el-table-column show-overflow-tooltip :key="index" :prop="col.prop" :label="col.label"></el-table-column>
             </template>
@@ -123,10 +123,5 @@
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
-    }
-
-    .max_height_390 {
-        max-height: 390px;
-        overflow: auto;
     }
 </style>

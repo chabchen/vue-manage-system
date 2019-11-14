@@ -1,7 +1,7 @@
 <template>
     <div :style="{width:widthData}" class="line-box" v-loading="loading">
         <div class="echart-ex1">
-            <div v-if = "selectData.title" class="lineBar-title">
+            <div v-if="selectData.title" class="lineBar-title">
                 <p>{{selectData.title}}</p>
                 <div v-show="selectData.showSelect" class="lineBar-select">
                     {{selectData.label}}
@@ -10,8 +10,8 @@
                     </el-select>
                 </div>
             </div>
-            <ve-histogram width=100% height="460px" style="top:25px" :extend="chartExtend" :colors="chartSettings.chartColor" :data="chartData" :loading="loading"
-                :settings="chartSettings" />
+            <ve-histogram width=100% height="460px" style="top:25px" :extend="chartExtend" :colors="chartSettings.chartColor" :data="chartData"
+                :loading="loading" :settings="chartSettings" />
         </div>
     </div>
 </template>
@@ -40,7 +40,7 @@
             this.chartSettings = this.prop.config.chartSettings;
             this.url = this.prop.config.url;
             this.sql2 = this.prop.config.sql2;
-            if(this.prop.config.widthData){
+            if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
             }
         },
@@ -51,68 +51,38 @@
         },
         watch: {
             changeParams(newValue) {
-                if(!newValue){return;}
+                if (!newValue) { return; }
                 this.params = newValue;
                 this.loadReportData(newValue);
                 this.prop.params = "";
             }
         },
         methods: {
-            getParams(params){
-                if(!params || (!params.searchSelect && !params.searchDate)){return "";}
-                let param = "";
-                if(params.searchSelect){
+            getSqlFlag(params) { //根据维度切换对应的sql
+                if (!params || (!params.searchDate && params.searchSelect)) { return; }
+                if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
-                        if (!obj.value || !obj.value.length) { continue; }
-                        if (obj.type && obj.tableField && Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
-                        }
-                        if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
-                            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
-                        }
-                        //多sql情况下根据筛选器选择对应的sql
-                        if(obj.tableField == "sqlFlag"){
-                            //酸奶调拨【吨|件】切换
-                            this.sqlFlag = obj.value == "sql2" ? true : false;
-                        }
+                        if (obj.tableField != "sqlFlag") { continue; }
+                        this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if(!params.searchDate){ return param}
+                if(!params.searchDate){return;}
                 for (let obj of params.searchDate) {
-                    if (!obj.value || !obj.dataShow) { continue; }
-                    //根据维度切换对应的sql
-                    if(this.fieldFlag && this.fieldFlag != obj.tableField){
+                    if (!obj.dataShow) { continue; }
+                    if (this.fieldFlag && this.fieldFlag != obj.tableField) {
                         this.sqlFlag = !this.sqlFlag;
                     }
                     this.fieldFlag = obj.tableField;
-                    if (Array.isArray(obj.value)) {
-                        param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
-                        param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
-                    } else {
-                        param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
-                    }
                 }
-                return param;
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
-                if(!sql || !this.url){this.loading = false; return;}
-                let param = this.getParams(params);
-                let groupby = '';
-                //判断单位为吨还是件
-                if(this.sqlFlag && this.sql2){
-                    groupby = this.sql2.split("groupby")[1];
-                    sql = this.sql2.split("groupby")[0];
-                }else{
-                    groupby = sql.split("groupby")[1]
-                    sql = sql.split("groupby")[0];
-                }
-                //判断是否存在groupby
-                if (groupby) {
-                    groupby = ' group by' + groupby;
-                }
+                if (!sql || !this.url) { this.loading = false; return; }
+                this.getSqlFlag(params);
+                if (this.sqlFlag) { sql = this.sql2; }
+                let newSql = this.$setParams(sql, params);
                 this.chartData.rows = [];
-                this.$requestData(this.url , 'post', { params: sql + param + groupby }).then(res => {
+                this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
                     this.chartData.rows = res.datas;
@@ -121,24 +91,24 @@
                     this.loading = false;
                 });
             },
-            setToolTip(datas){
-                if(!datas || !this.chartExtend.tooltip){return;}
+            setToolTip(datas) {
+                if (!datas || !this.chartExtend.tooltip) { return; }
                 let legendName = this.chartSettings.legendName
                 let name = this.chartData.columns[0];
-                this.chartExtend.tooltip.formatter = function(params){
+                this.chartExtend.tooltip.formatter = function (params) {
                     let str = ''
-                    for(let data of datas){
-                        if(!data || data[name] != params[0].name){continue}
+                    for (let data of datas) {
+                        if (!data || data[name] != params[0].name) { continue }
                         str += data[name] + "<br>"
-                        for(let field in data){
-                            if(field == name){continue;}
+                        for (let field in data) {
+                            if (field == name) { continue; }
                             str += legendName[field] + " : " + data[field] + "<br>"
                         }
                     }
                     return str
                 }
             },
-            changeSelect(value){
+            changeSelect(value) {
                 this.chartData.columns = this.chartData.columnsObj[value]
             }
         }
