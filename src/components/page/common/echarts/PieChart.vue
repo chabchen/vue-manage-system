@@ -42,6 +42,7 @@
             this.selectData = this.prop.config.selectData;
             this.chartData = this.prop.config.chartData;
             this.chartSettings = this.prop.config.chartSettings;
+            this.url = this.prop.config.url;
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
             }
@@ -81,7 +82,7 @@
                 let sql = this.prop.sqls;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(params);
-                if (this.sqlFlag) { sql = this.sql2; }
+                if (this.sqlFlag && this.sql2) { sql = this.sql2; }
                 let newSql = this.$setParams(sql, params);
                 this.chartData.rows = [];
                 this.$requestData(this.url, 'post', { params: newSql }).then(res => {

@@ -10,7 +10,8 @@
         data() {
             return {
                 reportId: '',
-                comps: []
+                comps: [],
+                paramDatas: ""
             }
         },
         created() {
@@ -27,6 +28,7 @@
         },
         methods: {
             loadReportConfig(){//根据报表Id查询当前报表的所有组件并加载组件
+                this.paramDatas = "";
                 this.$requestData('/sysReportDetail/list','get',{parentId:this.reportId,pageSize:1000,sortNames:'order_number'}).then(res => {
                     let tableData = [];
                     if(res.datas && res.datas.length){
@@ -41,9 +43,37 @@
                 }       
             },
             parentSearchEvent(datas){
+                datas = this.paramDatas ? this.addParam(datas) : datas;
                for(let data of this.comps){
                     data.prop.params = datas;
                }
+            },
+            addParam(datas){
+                let param = {};
+                let searchSelect = this.concatParams(datas.searchSelect, this.paramDatas.searchSelect);
+                let searchDate = this.concatParams(datas.searchDate, this.paramDatas.searchDate);
+                param.searchSelect = searchSelect;
+                param.searchDate = searchDate;
+                return param;
+            },
+            concatParams(sourceParams, targetParams) {
+                if (!sourceParams) { return; }
+                let concatArr = [];
+                concatArr = sourceParams.concat(targetParams ? targetParams : []);
+                let temp = {};   //用于tableField判断重复
+                let result = [];  //最后的新数组
+                concatArr.map(function (item, index) {
+                    if (item.tableField && !temp[item.tableField]) {
+                        result.push(item);
+                        temp[item.tableField] = true;
+                    }
+                });
+                return result;
+            },
+            parentSearchParam(datas){
+                if(datas.hideSearchBtn){
+                    this.paramDatas = datas; 
+                }
             }
         }
     }

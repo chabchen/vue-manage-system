@@ -77,19 +77,26 @@
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
+                let limitFields = this.prop.config.limitFields;
+                let lastDateFlag = this.prop.config.lastDateFlag;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(params);
-                if (this.sqlFlag) { sql = this.sql2; }
-                let newSql = this.$setParams(sql, params);
+                if (this.sqlFlag) { sql = this.sql2;}
+                sql = this.$setParams(sql, this.params,limitFields,lastDateFlag);
                 this.chartData.rows = [];
-                this.$requestData(this.url, 'post', { params: newSql }).then(res => {
+                this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
-                    this.chartData.rows = res.datas;
+                    this.setData(res.datas);
                     this.setToolTip(res.datas);
                 }).catch(() => {
                     this.loading = false;
                 });
+            },
+            setData(data){
+                let name = this.chartData.columns[0];
+                if(!data[0][name]){return;}
+                this.chartData.rows = data;
             },
             setToolTip(datas) {
                 if (!datas || !this.chartExtend.tooltip) { return; }

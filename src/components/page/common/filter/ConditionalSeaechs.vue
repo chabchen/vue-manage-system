@@ -103,7 +103,7 @@
                         this.dataFlag = !this.dataFlag;
                     });
                 }
-
+                this.$parent.$parent.parentSearchParam(this.searchData);
             },
             //切换维度触发方法
             changeRadio(params) {

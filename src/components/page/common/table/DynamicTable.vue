@@ -4,7 +4,7 @@
             <p>{{title}}</p>
         </div>
         <div style="overflow: auto;" v-if="showTable">
-            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border max-height="460" >
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border max-height="460">
                 <template v-for="(col, index) in tableColumns">
                     <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
                         <template v-for="(col2,index2) in col.children">
@@ -42,7 +42,7 @@
                 level: 1,
                 url: "",
                 sqlFlag: false,
-                fieldFlag: "",
+                fieldFlag: "",//用于维度切换
                 sql2: "",
                 tableColumns: [],
                 tableData: []
@@ -78,7 +78,7 @@
                         this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if(!params.searchDate){return;}
+                if (!params.searchDate) { return; }
                 for (let obj of params.searchDate) {
                     if (!obj.dataShow) { continue; }
                     if (this.fieldFlag && this.fieldFlag != obj.tableField) {
@@ -87,27 +87,27 @@
                     this.fieldFlag = obj.tableField;
                 }
             },
-            dynamicGroupBy(sql,level){
-                if(level == 1){
-                    sql = sql.replace("groupby","group by");
-                    sql = sql.replace("groupby","group by");
-                    sql = sql.replace("orderby","order by");
+            dynamicGroupBy(sql, level) {
+                if (level == 1) {
+                    sql = sql.replace("groupby", "group by");
+                    sql = sql.replace("groupby", "group by");
+                    sql = sql.replace("orderby", "order by");
                     return sql;
                 }
                 let selectArr = sql.split("select");
                 sql = selectArr[0] + "select";
-                for(let i = 1,j = selectArr.length;i<j;i++){
+                for (let i = 1, j = selectArr.length; i < j; i++) {
                     sql += this.setRowSpanField(level, selectArr[i]);
-                    if(i < selectArr.length -1){
+                    if (i < selectArr.length - 1) {
                         sql += "select";
                     }
                 }
-                
+
                 let groupbyArr = sql.split("groupby");
                 let newSql = groupbyArr[0] + " group by ";
-                for(let i = 1,j = groupbyArr.length;i<j;i++){
+                for (let i = 1, j = groupbyArr.length; i < j; i++) {
                     newSql += this.setRowSpanField(level, groupbyArr[i]);
-                    if(i < groupbyArr.length -1){
+                    if (i < groupbyArr.length - 1) {
                         newSql += "group by";
                     }
                 }
@@ -115,22 +115,29 @@
                 let mainFields = this.prop.config.mainField;
                 let field1 = mainFields[1];
                 let field2 = mainFields[2];
-                if(level == 2){
-                    newSql = arr2[0] + "and " + field1 + " = temp_table."+field1.split(".")[1] + " order by" + this.setRowSpanField(level, arr2[1]);
+                if (sql.indexOf("temp_table") > -1) {
+                    if (level == 2) {
+                        newSql = arr2[0] + "and " + field1 + " = temp_table." + field1.split(".")[1] + " order by" + this.setRowSpanField(level, arr2[1]);
+                    } else {
+                        newSql = arr2[0] + "and " + field2 + " = temp_table." + field2.split(".")[1] + " order by" + this.setRowSpanField(level, arr2[1]);
+                    }
                 }else{
-                    newSql = arr2[0] + "and " + field2 + " = temp_table."+field2.split(".")[1] + " order by" + this.setRowSpanField(level, arr2[1]);
-                }                
+                    newSql = arr2[0] + " order by " + this.setRowSpanField(level, arr2[1]);
+                }
+
                 return newSql;
             },
             loadReportData(level) {
                 let sql = this.prop.sqls;
+                let limitFields = this.prop.config.limitFields;
+                let lastDateFlag = this.prop.config.lastDateFlag;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(this.params);
-                if (this.sqlFlag) { sql = this.sql2; }
-                sql = this.dynamicGroupBy(sql,level);
-                let newSql = this.$setParams(sql, this.params);
+                if (this.sqlFlag && this.sql2) { sql = this.sql2; }
+                sql = this.dynamicGroupBy(sql, level);
+                sql = this.$setParams(sql, this.params, limitFields, lastDateFlag);
                 this.loading = true;
-                this.$requestData(this.url, 'post', { params: newSql }).then(res => {
+                this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.showTable = true;
                     this.loading = false;
                     if (!res.datas) { return; }
@@ -145,7 +152,7 @@
                 });
             },
             setRowSpanField(level, str) {
-                if(!str){return;}
+                if (!str) { return; }
                 let mainFields = this.prop.config.mainField;
                 if (!mainFields.length || level == 1) { return str; }
                 let field1 = mainFields[0];

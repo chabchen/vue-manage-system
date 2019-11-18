@@ -26,6 +26,7 @@
                                     <i style="color:#ff9d1e">{{obj.unit}}</i>
                                 </span>
                             </template>
+                            <br>
                         </P>
                     </template>
                 </div>
@@ -54,6 +55,7 @@
         created() {
             this.items = this.prop.config.items;
             this.url = this.prop.config.url;
+            this.sql2 = this.prop.config.sql2;
             if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
             }
@@ -115,13 +117,15 @@
             },
             loadReportData(params) {
                 let sql = this.prop.sqls;
+                let limitFields = this.prop.config.limitFields;
+                let lastDateFlag = this.prop.config.lastDateFlag;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(params);
-                if (this.sqlFlag) { sql = this.sql2; }
+                if (this.sqlFlag && this.sql2) { sql = this.sql2; }
                 //sql = sql.replace("reportDate", this.lastDay);//奶量分析求日均值
-                let newSql = this.$setParams(sql, params);
+                sql = this.$setParams(sql, this.params,limitFields,lastDateFlag);
                 this.resetData();
-                this.$requestData(this.url, 'post', { params: newSql }).then(res => {
+                this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
                     this.setCardData(res.datas[0]);
@@ -181,7 +185,7 @@
 
     .bottom-span {
         line-height: 25px;
-        margin: 0 5px
+        margin: 0 3px
     }
 
     .title_style {
