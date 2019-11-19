@@ -79,6 +79,7 @@
                 }
             },
             loadReportData(params) {
+                this.loading = true;
                 let sql = this.prop.sqls;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(params);

@@ -116,6 +116,7 @@
                 this.days = parseInt(days / (1000 * 60 * 60 * 24)) + 1;
             },
             loadReportData(params) {
+                this.loading = true;
                 let sql = this.prop.sqls;
                 let limitFields = this.prop.config.limitFields;
                 let lastDateFlag = this.prop.config.lastDateFlag;

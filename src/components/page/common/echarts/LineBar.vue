@@ -76,6 +76,7 @@
                 }
             },
             loadReportData(params) {
+                this.loading = true;
                 let sql = this.prop.sqls;
                 let limitFields = this.prop.config.limitFields;
                 let lastDateFlag = this.prop.config.lastDateFlag;
@@ -102,6 +103,7 @@
                 if (!datas || !this.chartExtend.tooltip) { return; }
                 let legendName = this.chartSettings.legendName
                 let name = this.chartData.columns[0];
+                let labelMapObj = this.chartData.labelMapObj[this.selectData.value];
                 this.chartExtend.tooltip.formatter = function (params) {
                     let str = ''
                     for (let data of datas) {
@@ -109,6 +111,7 @@
                         str += data[name] + "<br>"
                         for (let field in data) {
                             if (field == name) { continue; }
+                            if(labelMapObj && labelMapObj.indexOf(field) == -1){continue;}
                             str += legendName[field] + " : " + data[field] + "<br>"
                         }
                     }
@@ -116,7 +119,7 @@
                 }
             },
             changeSelect(value) {
-                this.chartData.columns = this.chartData.columnsObj[value]
+                this.chartData.columns = this.chartData.columnsObj[value];
             }
         }
     }

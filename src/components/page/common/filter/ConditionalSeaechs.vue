@@ -147,10 +147,11 @@
                             options.push({ label: data.VAL, value: data.VAL });
                         }
                         obj.options = options;
-                        if (obj.value.length) { obj.value = res.datas[0].VAL; }
+                        if (obj.value.length) { 
+                            obj.value = obj.multiple ? [res.datas[0].VAL] : res.datas[0].VAL;
+                         }
                     });
                 }
-
                 this.loading = false;
                 //通过懒加载加载组件
                 this.data = this.searchData.searchSelect;
