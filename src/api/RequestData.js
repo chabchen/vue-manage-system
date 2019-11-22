@@ -1,5 +1,8 @@
 import request from '../utils/request';
+import VueCookies from 'vue-cookies';
 
+let token = VueCookies.get("Yili-Admin-Token");
+token = token ? token : "123";
 export const requestData = (url,method,query) => {
     if('get' == method && query){
         url += "?";
@@ -9,6 +12,7 @@ export const requestData = (url,method,query) => {
         url = url.replace("&","");
         url = encodeURI(url);
     }
+    if(query){query.token = token;}
     return request({
         url: url,
         method: method,

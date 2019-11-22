@@ -1,12 +1,12 @@
 <template>
-    <div class="inline_block" :style="{width:searchData.conditionWidth}" v-loading="loading">
+    <div class="inline_block" :style="{width:searchData.conditionWidth}" v-loading="loading" v-show="selectorFlag"> 
         <div class="inline_block ml_25" v-for="(ieo,index) in searchData.searchDate" :key="index">
             <div class="grid-content bg-purple" v-if="ieo.dataShow">
                 <div class="block">
                     <div class="demonstration">{{ieo.title}}</div>
                     <el-date-picker class="rangeDate" v-model="ieo.value" :clearable="ieo.clearable" :type="ieo.dateType" :format="ieo.showFormat"
                         :value-format="ieo.valueFormat" range-separator="至" start-placeholder="开始" end-placeholder="结束" placeholder="选择日期"
-                        :style="{width:ieo.dateType == 'date' || ieo.dateType == 'month' ? '158px' : '220px' }" />
+                        :style="{width:ieo.dateType == 'daterange' || ieo.dateType == 'monthrange' ? '220px' :'158px' }" />
                 </div>
             </div>
         </div>
@@ -36,6 +36,7 @@
         data() {
             return {
                 loading: true,
+                selectorFlag: true,
                 currentcomp: "",
                 dataFlag: false,
                 appUrl: "",
@@ -63,6 +64,9 @@
             this.initFilterData();
         },
         methods: {
+            showSelector(){
+                this.selectorFlag = !this.selectorFlag;
+            },
             getPatrams(condition, data) {
                 if (Array.isArray(data.value)) {
                     let inValue = " ('" + data.value.join("','") + "') ";;
@@ -74,8 +78,8 @@
             },
             parentSearchEvent(param) {
                 for (let obj of this.data) {
-                    if (!obj.sql || !obj.url || !obj.relationField) { continue; }
-                    if (param.field == obj.field) { continue; }
+                    if (!obj.sql || !obj.url || !obj.relationField) { continue; }//非关联选择框
+                    if (param.field == obj.field) { continue; }//当前选择框
                     if (param.relationField && param.relationField.indexOf(obj.field) > -1) { continue; }
                     this.currentcomp = param.field + "," + param.relationField;
                     let condition = "";
@@ -134,6 +138,9 @@
             },
             initFilterData: async function () {
                 this.initDate();
+                if (this.searchData.hideSearchBtn) {
+                    this.$parent.$parent.parentSearchParam(this.searchData);
+                }
                 for (let obj of this.searchData.searchSelect) {
                     if (!obj.sql || !obj.url) {
                         if (obj.value && obj.options.length) { obj.value = obj.options[0].value; }
@@ -156,6 +163,9 @@
                 //通过懒加载加载组件
                 this.data = this.searchData.searchSelect;
                 this.appUrl = "filter/filter-select";
+                if (this.searchData.hideSearchBtn) {
+                    this.$parent.$parent.parentSearchParam(this.searchData);
+                }                
                 if (!this.searchData.hideSearchBtn) {
                     this.searchEvent();
                 }
@@ -205,7 +215,7 @@
                         obj.value = [nowYear + "" + nowMonth, nowYear + "" + nowMonth];
                     }
                     if (obj.dateType == "year") {
-                        obj.value = [now.getFullYear() - 1, now.getFullYear() - 1];
+                        obj.value = (nowYear-1).toString();
                     }
                 }
             },
@@ -249,7 +259,7 @@
     }
 
     .ml_25 {
-        margin-left: 15px;
+        margin-left: 5px;
 
     }
 

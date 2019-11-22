@@ -1,8 +1,9 @@
 <template>
     <div :style="{width:widthData,gridRow:'row-start 2 / row-end 3'}" class="wrapper" @click="routerTo" v-loading="loading">
-        <div class="title_style">
-            <span class="blue_span" v-if="items.card_title"> </span>
-            <span>&nbsp&nbsp{{items.card_title}}</span>
+        <div class="title_style" v-if="items.card_title">
+            <span class="blue_span">
+                    &nbsp&nbsp{{items.card_title}}    
+            </span>
         </div>
         <div class="wrap" style="height: 120px;">
             <div class="item" style="margin: auto">
@@ -165,7 +166,6 @@
         padding: 5px;
         display: inline-grid;
         box-sizing: border-box;
-        margin: 5px auto;
     }
 
     .wrap {
@@ -186,7 +186,9 @@
 
     .bottom-span {
         line-height: 25px;
-        margin: 0 3px
+        margin: 0 3px;
+        display: inline-block;
+        width: 200px;
     }
 
     .title_style {

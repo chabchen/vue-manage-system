@@ -65,20 +65,25 @@ export function getComponents() {
  * @param {*} limitFields 限制参数字段集 
  * @param {*} lastDateFlag 取日期区间最后一个值
  */
-export function setParams(sql,params,limitFields,lastDateFlag){
-    if(!sql || !params){return "";}
+export function setParams(sql,params,limitFields,lastDateFlag,firstDateFlag){
+    if(!params){return "";}
     if (!params.searchSelect && !params.searchDate) { return ""; }
     let param = "";let param2 = "";
     if (params.searchSelect) {//获取下拉框筛选器的值
         for (let obj of params.searchSelect) {
             if (!obj.value || !obj.value.length) { continue; }
-            if (obj.type && obj.tableField && Array.isArray(obj.value)) {
+            
+            if (obj.type && obj.tableField && Array.isArray(obj.value) && !obj.getBehind) {
                 param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
             }
             if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
                 param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
             }
             if(!limitFields || !limitFields.length || limitFields.indexOf(obj.tableField) == -1){continue;}
+            if(obj.type && obj.tableField && obj.getBehind){
+                param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value.substring(obj.value.lastIndexOf("-")+1) + "'";
+                continue;
+            }
             if (obj.type && obj.tableField && Array.isArray(obj.value)) {
                 param2 += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
             }
@@ -87,20 +92,27 @@ export function setParams(sql,params,limitFields,lastDateFlag){
             }
         }
     }
-    if (!params.searchDate) { return concatParams(sql,param,param2); }
-    for (let obj of params.searchDate) {//获取日期筛选器的值
-        if (!obj.value || !obj.value.length || !obj.dataShow) { continue; }
-        if (Array.isArray(obj.value)) {
-            param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
-            param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
-            if(!lastDateFlag){continue;}
-            param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value[1];
-        } else {
-            param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
-            if(!lastDateFlag){continue;}
-            param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+    if (params.searchDate) { 
+        for (let obj of params.searchDate) {//获取日期筛选器的值
+            if (!obj.value || !obj.value.length || !obj.dataShow) { continue; }
+            if (Array.isArray(obj.value)) {
+                param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
+                param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
+                if(firstDateFlag){
+                    param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value[0];
+                }
+                if(lastDateFlag){
+                    param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value[1];
+                }                
+            } else {
+                param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+                if(!lastDateFlag){continue;}
+                param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
+            }
         }
     }
+    if(!sql && lastDateFlag){return param2;}
+    if(!sql && !lastDateFlag){return param;}
     return concatParams(sql,param,param2);
 }
 

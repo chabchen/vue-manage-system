@@ -4,7 +4,7 @@
             <p>{{title}}</p>
         </div>
         <div style="overflow: auto;" v-if="showTable">
-            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border max-height="460">
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border :max-height="maxHeight">
                 <template v-for="(col, index) in tableColumns">
                     <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
                         <template v-for="(col2,index2) in col.children">
@@ -36,6 +36,7 @@
                 extendParam: '',
                 title: '',
                 widthData: '100%',
+                maxHeight: "350",
                 showTable: false,
                 showSummary: false,
                 rowspanData: {},
@@ -62,12 +63,16 @@
             }
         },
         created() {
-            if (this.prop.config.widthData) {
-                this.widthData = this.prop.config.widthData;
-            }
+            
             this.showSummary = this.prop.config.showSummary;
             this.sql2 = this.prop.config.sql2;
             this.url = this.prop.config.url;
+            if (this.prop.config.widthData) {
+                this.widthData = this.prop.config.widthData;
+            }
+            if (this.prop.config.maxHeight) {
+                this.maxHeight = this.prop.config.maxHeight;
+            }
         },
         methods: {
             getSqlFlag(params) { //根据维度切换对应的sql
@@ -194,6 +199,7 @@
                 }
             },
             objectSpanMethod({ row, column, rowIndex, columnIndex }) {//动态合并行
+                if(this.prop.config.noSpan){return ;}
                 if (row.level > 1 && columnIndex === 0) {
                     let _row = this.rowspanData['spanArr' + columnIndex][rowIndex];
                     let _col = _row > 0 ? 1 : 0;
@@ -206,6 +212,7 @@
                 }
             },
             getSpanArr(data, level, field) {//获取合并行数据
+                if(this.prop.config.noSpan){return ;}
                 let spanArr = [], pos = 0;
                 for (var i = 0, j = data.length; i < j; i++) {
                     if (i == 0) {
@@ -240,11 +247,11 @@
         letter-spacing: normal;
         color: #333333;
         vertical-align: none;
-        line-height: 50px;
+        line-height: 36px;
         text-transform: none;
         background: rgba(242, 242, 242, 1);
         padding-left: 15px;
-        margin: 10px 0 10px 0;
+        margin: 10px 0 3px 0;
     }
 
     .head-title p {
@@ -257,11 +264,6 @@
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
-    }
-
-    .max_height_390 {
-        max-height: 460px;
-        width: 100%;
     }
 
     .el-table {

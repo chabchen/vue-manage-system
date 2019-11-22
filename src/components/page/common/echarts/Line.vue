@@ -1,7 +1,7 @@
 <template>
     <div :style="{width:widthData}" class="line-box" v-loading="loading">
         <div class="echart-ex1">
-            <div v-if = "selectData.title" class="line-title">
+            <div v-if = "selectData.title" class="head-title">
                 <p>{{selectData.title}}</p>
                 <div v-show="selectData.showSelect" class="line-select">
                     {{selectData.label}}
@@ -10,7 +10,7 @@
                     </el-select>
                 </div>
             </div>
-            <ve-line width=100% height="460px" style="top:25px" :data="chartData" :extend="chartExtend" :colors="chartSettings.chartColor" :loading="loading"
+            <ve-line width=100% :height="heightData" :data="chartData" :extend="chartExtend" :colors="chartSettings.chartColor" :loading="loading"
                 :settings="chartSettings" />
         </div>
     </div>
@@ -26,6 +26,7 @@
                 chartSettings: {},
                 loading: true,
                 widthData: '100%',
+                heightData: '350px',
                 params: '',
                 reportType: "dayReport",
                 sql2: "",
@@ -42,6 +43,9 @@
             this.url = this.prop.config.url;
             if(this.prop.config.widthData){
                 this.widthData = this.prop.config.widthData;
+            }
+            if (this.prop.config.heightData) {
+                this.heightData = this.prop.config.heightData;
             }
         },
         computed: {
@@ -118,39 +122,38 @@
     }
 </script>
 <style scoped>
-    .line-title {
-        font-family: 'Arial Normal', 'Arial';
-        font-weight: 600;
-        font-style: normal;
-        font-size: 20px;
-        letter-spacing: normal;
-        vertical-align: none;
-        line-height: 50px;
-        text-transform: none;
-        padding-left: 15px;
-        margin: 10px 0 10px 0;
-        background: rgba(242, 242, 242, 1);
-        color: #333333;
-    }
 
-    .echart-ex1 {
+     .echart-ex1 {
         display: inline-block;
         width: 100%;
-        margin: 0 auto;
         border-width: 0px;
         background: inherit;
-        background-color: rgba(255, 255, 255, 1);
         border: none;
         border-radius: 0px;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-sizing: border-box;
-        overflow: hidden
+        overflow: hidden;
     }
 
-    .line-title p {
-        display: inline-block;
+     .head-title {
+        font-family: 'Arial Normal', 'Arial';
+        font-weight: 600;
+        font-style: normal;
+        font-size: 20px;
+        letter-spacing: normal;
+        color: #333333;
+        vertical-align: none;
+        line-height: 36px;
+        text-transform: none;
+        background: rgba(242, 242, 242, 1);
+        padding-left: 15px;
+        margin: 10px 0 3px 0;
+    }
+
+    .head-title p {
+        display: inline-grid;
     }
 
     .line-select {

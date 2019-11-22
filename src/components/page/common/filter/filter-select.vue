@@ -153,7 +153,7 @@
 
     .el-select__tags-text {
         display: inline-block;
-        max-width: 60px;
+        max-width: 40px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -165,7 +165,7 @@
     }
 
     .select_style {
-        width: 158px;
+        width: 130px;
         height: 28px;
     }
 </style>

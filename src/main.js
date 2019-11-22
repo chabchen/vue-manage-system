@@ -13,6 +13,8 @@ import 'babel-polyfill';
 import { requestData } from './api/RequestData';
 import {setFinanceVal,setDecimalVal,getComponents,setParams} from './components/common/utils/common.js'
 
+import VueCookies from 'vue-cookies'
+Vue.use(VueCookies);
 
 Vue.config.productionTip = false;
 Vue.use(ElementUI, {size: 'small'});

@@ -1,7 +1,7 @@
 <template>
     <div :style="{width:widthData}" class="line-box" v-loading="loading">
         <div class="echart-ex1">
-            <div v-if = "selectData.title" class="line-title">
+            <div v-if="selectData.title" class="head-title">
                 <p>{{selectData.title}}</p>
                 <div v-show="selectData.showDetail" class="line-select">
                     <router-link :to="{ path: 'index', query: { reportId: selectData.detailId }}">
@@ -15,7 +15,7 @@
                     </el-select>
                 </div>
             </div>
-            <ve-pie width=100% height="460px" style="top:25px" :data="chartData" :settings="chartSettings"></ve-pie>
+            <ve-pie width=100% :height="heightData" :data="chartData" :extend="chartExtend" :settings="chartSettings" :colors="colors"></ve-pie>
         </div>
     </div>
 </template>
@@ -28,12 +28,16 @@
                 loading: true,
                 selectData: {},
                 widthData: '50%',
+                heightData: '350px',
                 chartData: {},
+                chartExtend: {},
                 chartSettings: {},
+                colors: ["#0084d5","#13caae","#6d68f0","#0c6e5e"],
                 params: "",
                 url: "",
                 reportType: "dayReport",
                 sqlFlag: false,
+                sql2: "",
                 fieldFlag: "",
             }
         },
@@ -41,10 +45,16 @@
             this.loading = false;
             this.selectData = this.prop.config.selectData;
             this.chartData = this.prop.config.chartData;
+            this.chartExtend = this.prop.config.chartExtend;
             this.chartSettings = this.prop.config.chartSettings;
+            this.colors = this.prop.config.colors;
             this.url = this.prop.config.url;
-            if(this.prop.config.widthData){
+            this.sql2 = this.prop.config.sql2;
+            if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
+            }
+            if (this.prop.config.heightData) {
+                this.heightData = this.prop.config.heightData;
             }
         },
         computed: {
@@ -54,7 +64,7 @@
         },
         watch: {
             changeParams(newValue) {
-                if(!newValue){return;}
+                if (!newValue) { return; }
                 this.params = newValue;
                 this.loadReportData(newValue);
                 this.prop.params = "";
@@ -69,7 +79,7 @@
                         this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if(!params.searchDate){return;}
+                if (!params.searchDate) { return; }
                 for (let obj of params.searchDate) {
                     if (!obj.dataShow) { continue; }
                     if (this.fieldFlag && this.fieldFlag != obj.tableField) {
@@ -81,10 +91,23 @@
             loadReportData(params) {
                 this.loading = true;
                 let sql = this.prop.sqls;
+                let limitFields = this.prop.config.limitFields;
+                let lastDateFlag = this.prop.config.lastDateFlag;
+                let nonDateSegment = this.prop.config.nonDateSegment;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(params);
                 if (this.sqlFlag && this.sql2) { sql = this.sql2; }
-                let newSql = this.$setParams(sql, params);
+                let newSql = "";
+                if (nonDateSegment) {
+                    newSql = this.$setParams("", params, limitFields, lastDateFlag);
+                    let sqlArr = sql.trim().split("1=1");
+                    for (let i = 0, j = sqlArr.length - 1; i < j; i++) {
+                        sql = sql.replace("1=1","2=2 "+newSql);
+                    }
+                    newSql = sql;
+                } else {
+                    newSql = this.$setParams(sql, params, limitFields, lastDateFlag);
+                }
                 this.chartData.rows = [];
                 this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.loading = false;
@@ -96,34 +119,18 @@
                 });
             },
             setToolTip(datas) {
-                
+
             }
         }
     }
 </script>
 <style scoped>
-    .line-title {
-        font-family: 'Arial Normal', 'Arial';
-        font-weight: 600;
-        font-style: normal;
-        font-size: 20px;
-        letter-spacing: normal;
-        vertical-align: none;
-        line-height: 50px;
-        text-transform: none;
-        padding-left: 15px;
-        margin: 10px 0 10px 0;
-        background: rgba(242, 242, 242, 1);
-        color: #333333;
-    }
-
+   
     .echart-ex1 {
         display: inline-block;
         width: 99.6%;
-        margin: 2% auto;
         border-width: 0px;
         background: inherit;
-        background-color: rgba(255, 255, 255, 1);
         border: none;
         border-radius: 0px;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
@@ -132,8 +139,23 @@
         box-sizing: border-box;
     }
 
-    .line-title p {
-        display: inline-block;
+     .head-title {
+        font-family: 'Arial Normal', 'Arial';
+        font-weight: 600;
+        font-style: normal;
+        font-size: 20px;
+        letter-spacing: normal;
+        color: #333333;
+        vertical-align: none;
+        line-height: 36px;
+        text-transform: none;
+        background: rgba(242, 242, 242, 1);
+        padding-left: 15px;
+        margin: 10px 0 3px 0;
+    }
+
+    .head-title p {
+        display: inline-grid;
     }
 
     .line-select {

@@ -208,11 +208,11 @@
         letter-spacing: normal;
         color: #333333;
         vertical-align: none;
-        line-height: 50px;
+        line-height: 36px;
         text-transform: none;
         background: rgba(242, 242, 242, 1);
         padding-left: 15px;
-        margin: 10px 0 10px 0;
+        margin: 10px 0 3px 0;
     }
 
     .head-title p {
@@ -228,11 +228,6 @@
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
     }
 
-    .max_height_390 {
-        max-height: 460px;
-        width: 100%;
-    }
-
     .el-table {
         position: unset !important;
         overflow: auto !important;
@@ -242,8 +237,4 @@
         display: block !important;
     }
 
-    .auto_div {
-        height: 460px;
-        width: 1300px;
-    }
 </style>
