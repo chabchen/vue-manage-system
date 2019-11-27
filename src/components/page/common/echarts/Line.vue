@@ -1,7 +1,7 @@
 <template>
     <div :style="{width:widthData}" class="line-box" v-loading="loading">
         <div class="echart-ex1">
-            <div v-if = "selectData.title" class="head-title">
+            <div v-if="selectData.title" class="head-title">
                 <p>{{selectData.title}}</p>
                 <div v-show="selectData.showSelect" class="line-select">
                     {{selectData.label}}
@@ -10,13 +10,18 @@
                     </el-select>
                 </div>
             </div>
+            <div v-show="!nodataFlag">
             <ve-line width=100% :height="heightData" :data="chartData" :extend="chartExtend" :colors="chartSettings.chartColor" :loading="loading"
                 :settings="chartSettings" />
+            </div>
+            <div v-show="nodataFlag"><nodata/></div>
         </div>
     </div>
 </template>
 <script>
+    import nodata from '../nodata.vue'
     export default {
+        components: { nodata },
         props: { prop: Object },
         data() {
             return {
@@ -32,6 +37,7 @@
                 sql2: "",
                 sqlFlag: false,
                 fieldFlag: "",
+                nodataFlag: false
             }
         },
         created() {
@@ -41,7 +47,7 @@
             this.chartSettings = this.prop.config.chartSettings;
             this.sql2 = this.prop.config.sql2;
             this.url = this.prop.config.url;
-            if(this.prop.config.widthData){
+            if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
             }
             if (this.prop.config.heightData) {
@@ -55,7 +61,7 @@
         },
         watch: {
             changeParams(newValue) {
-                if(!newValue){return;}
+                if (!newValue) { return; }
                 this.params = newValue;
                 this.loadReportData(newValue);
                 this.prop.params = "";
@@ -70,7 +76,7 @@
                         this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if(!params.searchDate){return;}
+                if (!params.searchDate) { return; }
                 for (let obj of params.searchDate) {
                     if (!obj.dataShow) { continue; }
                     if (this.fieldFlag && this.fieldFlag != obj.tableField) {
@@ -80,6 +86,8 @@
                 }
             },
             loadReportData(params) {
+                this.loading = true;
+                this.nodataFlag = false;
                 let sql = this.prop.sqls;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(params);
@@ -89,41 +97,41 @@
                 this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
+                    if (res.datas.code == 502) { this.nodataFlag = true; }
                     this.chartData.rows = res.datas;
                     this.setData(res.datas);
                 }).catch(() => {
                     this.loading = false;
                 });
             },
-            setData(datas){
+            setData(datas) {
                 this.chartData.rows = [];
                 let fields = this.chartData.fields;
                 this.chartData.columns = this.chartData.columns2;
-                if(this.reportType == "monthReport"){
+                if (this.reportType == "monthReport") {
                     fields = this.chartData.fields2;
                     this.chartData.columns = this.chartData.columns3;
-                }                
-                for(let obj of datas){
+                }
+                for (let obj of datas) {
                     let row = {};
-                    for(let field in fields){
+                    for (let field in fields) {
                         row[fields[field]] = obj.field;
                     }
                     this.chartData.rows.push(row);
                 }
                 this.setToolTip(datas);
             },
-            setToolTip(datas){
-                
+            setToolTip(datas) {
+
             },
-            changeSelect(value){
+            changeSelect(value) {
                 this.chartData.columns = this.chartData.columnsObj[value]
             }
         }
     }
 </script>
 <style scoped>
-
-     .echart-ex1 {
+    .echart-ex1 {
         display: inline-block;
         width: 100%;
         border-width: 0px;
@@ -137,7 +145,7 @@
         overflow: hidden;
     }
 
-     .head-title {
+    .head-title {
         font-family: 'Arial Normal', 'Arial';
         font-weight: 600;
         font-style: normal;
@@ -153,7 +161,7 @@
     }
 
     .head-title p {
-        display: inline-grid;
+        display: inline-block;
     }
 
     .line-select {

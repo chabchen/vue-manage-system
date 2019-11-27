@@ -10,14 +10,19 @@
                     </el-select>
                 </div>
             </div>
-            <ve-histogram width=100% :height="heightData" :extend="chartExtend" :colors="chartSettings.chartColor" :data="chartData"
-                :loading="loading" :settings="chartSettings" />
+            <div v-show="!nodataFlag">
+                <ve-histogram width=100% :height="heightData" :extend="chartExtend" :colors="chartSettings.chartColor" :data="chartData"
+                    :loading="loading" :settings="chartSettings" />
+            </div>
+            <div v-show="nodataFlag"><nodata/></div>
         </div>
     </div>
 </template>
 
 <script>
+    import nodata from '../nodata.vue'
     export default {
+        components: { nodata },
         props: { prop: Object },
         data() {
             return {
@@ -28,12 +33,17 @@
                 chartSettings: {},
                 widthData: '50%',
                 heightData: '350px',
+                reportType: "dayReport",
+                days: "1",
                 params: '',
                 sqlFlag: false,
                 sql2: "",
                 fieldFlag: "",
                 url: '',
-                iconFlag: false
+                iconFlag: false,
+                nodataFlag: false,
+                datas: [],
+                searchDateArr: []
             }
         },
         created() {
@@ -64,10 +74,13 @@
             }
         },
         methods: {
-            getSqlFlag(params) { //根据维度切换对应的sql
+            getSqlFlag(params,sql) { //根据维度切换对应的sql
                 if (!params || (!params.searchDate && params.searchSelect)) { return; }
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
+                        if (obj.tableField == "reportType") {//求日均值
+                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
+                        }
                         if (obj.tableField != "sqlFlag") { continue; }
                         this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
@@ -79,73 +92,110 @@
                         this.sqlFlag = !this.sqlFlag;
                     }
                     this.fieldFlag = obj.tableField;
+                    if (Array.isArray(obj.value)) { 
+                        this.getDays(obj.value);
+                        this.searchDateArr = obj.value;                        
+                    }
                 }
             },
-            getParam(sql,params,limitFields,lastDateFlag,firstDateFlag,param_year){
-                if(!sql || !params){return "";}
+            getDays(dates) {//获取选中的日期天数
+                if (!dates) { return; }
+                let start = dates[0];
+                let end = dates[1];
+                let startDate;
+                let endDate;
+                let num = 1;
+                if (this.reportType == "dayReport") {//日报
+                    this.lastDay = end;
+                    startDate = new Date(start.substring(0, 4), parseInt(start.substring(4, 6)) - 1, start.substring(6, 8));
+                    endDate = new Date(end.substring(0, 4), parseInt(end.substring(4, 6)) - 1, end.substring(6, 8));
+                } else {//月报
+                    startDate = new Date(start.substring(0, 4), parseInt(start.substring(4, 6)) - 1);
+                    endDate = new Date(end.substring(0, 4), end.substring(4, 6));
+                    let day = new Date(endDate.getTime() - 86400000).getDate();
+                    this.lastDay = end + "" + day;
+                    num = 0;
+                }
+                let days = endDate.getTime() - startDate.getTime();
+                this.days = parseInt(days / (1000 * 60 * 60 * 24)) + num;
+            },
+            getParam(sql, params, limitFields, lastDateFlag, param_year) {
+                if (!sql || !params) { return ""; }
                 if (!params.searchSelect && !params.searchDate) { return ""; }
-                let param = "";let param2 = "";
+                let param = ""; let param2 = "";
                 if (params.searchSelect) {//获取下拉框筛选器的值
                     for (let obj of params.searchSelect) {
                         if (!obj.value || !obj.value.length) { continue; }
-                        if(obj.tableField == "ppri.estrus_period" ){
-                            param += " " + obj.type + " year =" + obj.value.substring(0,4);
+                        if (obj.tableField == "ppri.estrus_period") {
+                            param += " " + obj.type + " year =" + obj.value.substring(0, 4);
                         }
-                        if (obj.type && obj.tableField && Array.isArray(obj.value) &&!obj.getBehind) {
+                        if (obj.type && obj.tableField && Array.isArray(obj.value) && !obj.getBehind) {
                             param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
                         }
                         if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
-                            if(obj.tableField != "ppri.estrus_period" || !param_year){
+                            if (obj.tableField != "ppri.estrus_period" || !param_year) {
                                 param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                             }
                         }
-                        if(!limitFields || !limitFields.length || limitFields.indexOf(obj.tableField) == -1){continue;}
-                        if (obj.type && obj.tableField && Array.isArray(obj.value) &&!obj.getBehind) {
+                        if (!limitFields || !limitFields.length || limitFields.indexOf(obj.tableField) == -1) { continue; }
+                        if (obj.type && obj.tableField && Array.isArray(obj.value) && !obj.getBehind) {
                             param2 += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
                         }
-                        if (obj.type && obj.tableField && !Array.isArray(obj.value) &&!obj.getBehind) {
+                        if (obj.type && obj.tableField && !Array.isArray(obj.value) && !obj.getBehind) {
                             param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
-                        if(obj.type && obj.tableField && obj.getBehind){
-                            param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value.substring(obj.value.lastIndexOf("-")+1) + "'";
+                        if (obj.type && obj.tableField && obj.getBehind) {
+                            param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value.substring(obj.value.lastIndexOf("-") + 1) + "'";
                         }
                     }
                 }
-                return this.concatParams(sql,param,param2);
+                return this.concatParams(sql, param, param2);
             },
-            concatParams(sql,param,param2){
+            concatParams(sql, param, param2) {
                 let sqlArr = sql.trim().split("1=1");
                 let newSql = param2 ? sqlArr[0] + " 1=1 " + param2 : sqlArr[0] + " 1=1 " + param;
-                for(let i = 1,j = sqlArr.length -1;i<j;i++){
-                    newSql += sqlArr[i] + " 1=1 "+param;
+                for (let i = 1, j = sqlArr.length - 1; i < j; i++) {
+                    newSql += sqlArr[i] + " 1=1 " + param;
                 }
-                newSql = newSql + sqlArr[sqlArr.length-1];
-                newSql = newSql.replace("groupby","group by");
+                newSql = newSql + sqlArr[sqlArr.length - 1];
+                newSql = newSql.replace("groupby", "group by");
                 return newSql;
             },
             loadReportData(params) {
                 this.iconFlag = false;
                 this.loading = true;
+                this.nodataFlag = false;
                 let sql = this.prop.sqls;
                 let limitFields = this.prop.config.limitFields;
                 let lastDateFlag = this.prop.config.lastDateFlag;
                 let firstDateFlag = this.prop.config.firstDateFlag;
                 let param_year = this.prop.config.param_year;
                 if (!sql || !this.url) { this.loading = false; return; }
-                this.getSqlFlag(params);
-                if (this.sqlFlag) { sql = this.sql2;}
-                if(param_year){
-                    sql = this.getParam(sql, this.params,limitFields,lastDateFlag,firstDateFlag,param_year);    
-                }else{
-                    sql = this.$setParams(sql, this.params,limitFields,lastDateFlag);
+                this.getSqlFlag(params,sql);
+                if (this.sqlFlag && this.sql2) { sql = this.sql2;}
+                while(sql.indexOf("dateDays") > -1){
+                    sql = sql.replace("dateDays", this.days);//求日均值
+                }
+                if (param_year) {
+                    sql = this.getParam(sql, this.params, limitFields, lastDateFlag, param_year);
+                    //针对饲养分析供应商模块
+                    while(sql.indexOf("beginDate") > -1){
+                        sql = sql.replace("beginDate",this.searchDateArr[0]);
+                    }
+                    while(sql.indexOf("endDate") > -1){
+                        sql = sql.replace("endDate",this.searchDateArr[1]);
+                    }
+                } else {
+                    sql = this.$setParams(sql, this.params, limitFields, lastDateFlag);
                 }
                 this.chartData.rows = [];
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
-                    if (!res.datas) { return; }
-                    this.setData(res.datas);
+                    if (!res.datas) {return; }
+                    if(res.datas.code == 502){this.nodataFlag = true;}              
                     this.setToolTip(res.datas);
-                }).catch(() => {
+                    this.setData(res.datas);
+                }).catch((e) => {
                     this.loading = false;
                 });
             },
@@ -154,16 +204,19 @@
                 if (!data[0][name]) { return; }
                 this.chartData.rows = data;
             },
-            setToolTip(datas) {
+            setToolTip(data) {
+                this.setToolbox();
+                this.datas = data;
                 this.chartExtend.series.label.normal.show = false;
-                if (!datas || !this.chartExtend.tooltip) { return; }
+                if (!data || !this.chartExtend.tooltip) { return; }
+                if(this.chartExtend.tooltip.formatter){return;}
                 let legendName = this.chartSettings.legendName
                 let name = this.chartData.columns[0];
                 let _this = this;
                 this.chartExtend.tooltip.formatter = function (params) {
                     let str = ''
                     let labelMapObj = _this.chartData.labelMapObj ? _this.chartData.labelMapObj[_this.selectData.value] : "";
-                    for (let data of datas) {
+                    for (let data of _this.datas) {
                         if (!data || data[name] != params[0].name) { continue }
                         str += data[name] + "<br>";
                         for (let field in data) {
@@ -175,7 +228,11 @@
                     }
                     return str
                 };
-                let icon = this.chartExtend.icon;
+                
+            },
+            setToolbox(){
+                if(!this.chartExtend.toolbox || this.chartExtend.toolbox.feature){return;}
+                let icon = window.config.eyeURL+"static/img/view_off.png";
                 this.chartExtend.toolbox.feature = {
                     myTool: {
                         show: true,
@@ -188,10 +245,10 @@
                     }
                 }
             },
-            changViewData(iconFlag){
-                let icon = this.chartExtend.icon;
-                let icon2 = this.chartExtend.icon2;
-                this.chartExtend.toolbox.feature.myTool.icon = this.iconFlag ? 'image://'+icon2 : 'image://'+icon; 
+            changViewData(iconFlag) {
+                let icon = window.config.eyeURL+"static/img/view_off.png";
+                let icon2 = window.config.eyeURL+"static/img/view.png";
+                this.chartExtend.toolbox.feature.myTool.icon = this.iconFlag ? 'image://' + icon2 : 'image://' + icon;
                 this.chartExtend.series.label.normal.show = this.iconFlag;
             },
             changeSelect(value) {
@@ -202,7 +259,7 @@
 </script>
 <style scoped>
     .echart-ex1 {
-        display: inline-block;
+        display: inline-grid;
         width: 99.6%;
         border-width: 0px;
         background: inherit;
@@ -228,7 +285,7 @@
     }
 
     .head-title p {
-        display: inline-grid;
+        display: inline-block;
     }
 
     .lineBar-select {
@@ -238,6 +295,6 @@
 
     .line-box {
         box-sizing: border-box;
-        display: inline-grid;
+        display: inline-block;
     }
 </style>

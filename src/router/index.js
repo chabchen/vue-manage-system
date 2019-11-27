@@ -87,7 +87,7 @@ var routes = [{
     meta: { title: '基础表格' }
 },
 {
-    path: '/index',
+    path: '/index/dashboard*',
     component: () => import('../components/page/common/index.vue'),
     meta: { title: '报表数据页' }
 },

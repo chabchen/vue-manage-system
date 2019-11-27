@@ -112,7 +112,7 @@
                 this.$refs.multipleTable.toggleRowSelection(row);
             },
             openDetailedPage(row) {
-                this.$router.push({ path: 'index', query: { reportId: row.reportId } });
+                this.$router.push({ path: 'index/dashboard//'+row.reportId});//, query: { reportId: row.reportId } });
             },
             openDetailed(row){
                 this.$router.push({ path: 'reportDetailManage', query: { reportId: row.reportId } });

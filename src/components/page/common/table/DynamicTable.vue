@@ -3,8 +3,8 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <div style="overflow: auto;" v-if="showTable">
-            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border :max-height="maxHeight">
+        <div style="overflow: auto;" v-if="showTable && !nodataFlag">
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border :max-height="maxHeight" min-height="220">
                 <template v-for="(col, index) in tableColumns">
                     <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
                         <template v-for="(col2,index2) in col.children">
@@ -23,12 +23,15 @@
                 </template>
             </el-table>
         </div>
+        <div v-show="nodataFlag"><nodata/></div>
     </div>
 </template>
 
 <script>
+    import nodata from '../nodata.vue'
     export default {
-        props: { prop: Object },
+        components: { nodata },
+        props: { prop: Object},
         data() {
             return {
                 loading: true,
@@ -41,12 +44,16 @@
                 showSummary: false,
                 rowspanData: {},
                 level: 1,
+                reportType: "dayReport",
+                days: "1",
                 url: "",
                 sqlFlag: false,
                 fieldFlag: "",//用于维度切换
                 sql2: "",
+                concatFields: [],
                 tableColumns: [],
-                tableData: []
+                tableData: [],
+                nodataFlag: false
             };
         },
         computed: {
@@ -63,7 +70,6 @@
             }
         },
         created() {
-            
             this.showSummary = this.prop.config.showSummary;
             this.sql2 = this.prop.config.sql2;
             this.url = this.prop.config.url;
@@ -79,6 +85,9 @@
                 if (!params || (!params.searchDate && params.searchSelect)) { return; }
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
+                        if (obj.tableField == "reportType") {//求日均值
+                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
+                        }
                         if (obj.tableField != "sqlFlag") { continue; }
                         this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
@@ -90,12 +99,35 @@
                         this.sqlFlag = !this.sqlFlag;
                     }
                     this.fieldFlag = obj.tableField;
+                    if (Array.isArray(obj.value)) { this.getDays(obj.value);}
                 }
+            },
+            getDays(dates) {//获取选中的日期天数
+                if (!dates) { return; }
+                let start = dates[0];
+                let end = dates[1];
+                let startDate;
+                let endDate;
+                let num = 1;
+                if (this.reportType == "dayReport") {//日报
+                    this.lastDay = end;
+                    startDate = new Date(start.substring(0, 4), parseInt(start.substring(4, 6)) - 1, start.substring(6, 8));
+                    endDate = new Date(end.substring(0, 4), parseInt(end.substring(4, 6)) - 1, end.substring(6, 8));
+                } else {//月报
+                    startDate = new Date(start.substring(0, 4), parseInt(start.substring(4, 6)) - 1);
+                    endDate = new Date(end.substring(0, 4), end.substring(4, 6));
+                    let day = new Date(endDate.getTime() - 86400000).getDate();
+                    this.lastDay = end + "" + day;
+                    num = 0;
+                }
+                let days = endDate.getTime() - startDate.getTime();
+                this.days = parseInt(days / (1000 * 60 * 60 * 24)) + num;
             },
             dynamicGroupBy(sql, level) {
                 if (level == 1) {
-                    sql = sql.replace("groupby", "group by");
-                    sql = sql.replace("groupby", "group by");
+                    while(sql.indexOf("groupby") > -1){
+                        sql = sql.replace("groupby", "group by");
+                    }
                     sql = sql.replace("orderby", "order by");
                     return sql;
                 }
@@ -126,19 +158,23 @@
                     } else {
                         newSql = arr2[0] + "and " + field2 + " = temp_table." + field2.split(".")[1] + " order by" + this.setRowSpanField(level, arr2[1]);
                     }
-                }else{
+                } else {
                     newSql = arr2[0] + " order by " + this.setRowSpanField(level, arr2[1]);
                 }
-
                 return newSql;
             },
             loadReportData(level) {
+                this.nodataFlag = false;
+                this.tableData = [];
                 let sql = this.prop.sqls;
                 let limitFields = this.prop.config.limitFields;
                 let lastDateFlag = this.prop.config.lastDateFlag;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(this.params);
                 if (this.sqlFlag && this.sql2) { sql = this.sql2; }
+                while(sql.indexOf("dateDays") > -1){
+                    sql = sql.replace("dateDays", this.days);//求日均值
+                }
                 sql = this.dynamicGroupBy(sql, level);
                 sql = this.$setParams(sql, this.params, limitFields, lastDateFlag);
                 this.loading = true;
@@ -146,8 +182,14 @@
                     this.showTable = true;
                     this.loading = false;
                     if (!res.datas) { return; }
-                    for (let obj of res.datas) {
-                        obj.level = level;
+                    if (res.datas.code == 502) { this.nodataFlag = true; }
+                    for (let row of res.datas) {
+                        if (!this.prop.config.noSpan) { row.level = level; }                        
+                        if (!this.concatFields || !this.concatFields.length) {continue;}
+                        for (let field in row) {
+                            if (this.concatFields.indexOf(field) == -1) { continue; }
+                            row[field] = row[field] + "%";
+                        }
                     }
                     this.tableData = res.datas;
                     this.loadTableHead(level, true);
@@ -171,6 +213,11 @@
             loadTableHead(level, flag) {//动态加载表头
                 let tableColumn = this.prop.config['items' + level];
                 this.tableColumns = tableColumn.concat(this.prop.config.items);
+                this.concatFields = [];
+                for(let obj of this.prop.config.items){//获取比例字段
+                    if(!obj.label || obj.label.indexOf("%") == -1){continue;}
+                    this.concatFields.push(obj.prop);
+                }
                 this.title = this.prop.config.title;
                 this.level = level;
                 if (this.level == 2) {
@@ -199,7 +246,6 @@
                 }
             },
             objectSpanMethod({ row, column, rowIndex, columnIndex }) {//动态合并行
-                if(this.prop.config.noSpan){return ;}
                 if (row.level > 1 && columnIndex === 0) {
                     let _row = this.rowspanData['spanArr' + columnIndex][rowIndex];
                     let _col = _row > 0 ? 1 : 0;
@@ -212,7 +258,6 @@
                 }
             },
             getSpanArr(data, level, field) {//获取合并行数据
-                if(this.prop.config.noSpan){return ;}
                 let spanArr = [], pos = 0;
                 for (var i = 0, j = data.length; i < j; i++) {
                     if (i == 0) {
@@ -229,7 +274,7 @@
                     }
                 }
                 this.rowspanData['spanArr' + level] = spanArr;
-            },
+            }
         }
     };
 </script>
@@ -255,12 +300,13 @@
     }
 
     .head-title p {
-        display: inline-grid;
+        display: inline-block;
     }
 
     .line-box {
+        min-height: 250px;
         box-sizing: border-box;
-        display: inline-grid;
+        display: inline-block;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);

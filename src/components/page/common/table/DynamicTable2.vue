@@ -216,13 +216,14 @@
     }
 
     .head-title p {
-        display: inline-grid;
+        display: inline-block;
     }
 
     .line-box {
+        min-height: 400px;
         box-sizing: border-box;
         margin-bottom: 20px;
-        display: inline-grid;
+        display: inline-block;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);

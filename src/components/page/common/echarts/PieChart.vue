@@ -15,13 +15,18 @@
                     </el-select>
                 </div>
             </div>
-            <ve-pie width=100% :height="heightData" :data="chartData" :extend="chartExtend" :settings="chartSettings" :colors="colors"></ve-pie>
+            <div v-show="!nodataFlag">
+                <ve-pie width=100% :height="heightData" :data="chartData" :extend="chartExtend" :settings="chartSettings" :colors="colors"></ve-pie>
+            </div>
+            <div v-show="nodataFlag"><nodata/></div>
         </div>
     </div>
 </template>
 
 <script>
+    import nodata from '../nodata.vue'
     export default {
+        components: { nodata },
         props: { prop: Object },
         data() {
             return {
@@ -32,13 +37,14 @@
                 chartData: {},
                 chartExtend: {},
                 chartSettings: {},
-                colors: ["#0084d5","#13caae","#6d68f0","#0c6e5e"],
+                colors: ["#0084d5", "#13caae", "#6d68f0", "#0c6e5e"],
                 params: "",
                 url: "",
                 reportType: "dayReport",
                 sqlFlag: false,
                 sql2: "",
                 fieldFlag: "",
+                nodataFlag: false
             }
         },
         created() {
@@ -90,6 +96,7 @@
             },
             loadReportData(params) {
                 this.loading = true;
+                this.nodataFlag = false;
                 let sql = this.prop.sqls;
                 let limitFields = this.prop.config.limitFields;
                 let lastDateFlag = this.prop.config.lastDateFlag;
@@ -102,7 +109,7 @@
                     newSql = this.$setParams("", params, limitFields, lastDateFlag);
                     let sqlArr = sql.trim().split("1=1");
                     for (let i = 0, j = sqlArr.length - 1; i < j; i++) {
-                        sql = sql.replace("1=1","2=2 "+newSql);
+                        sql = sql.replace("1=1", "2=2 " + newSql);
                     }
                     newSql = sql;
                 } else {
@@ -112,20 +119,16 @@
                 this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
+                    if(res.datas.code == 502){this.nodataFlag = true;}    
                     this.chartData.rows = res.datas;
-                    this.setToolTip(res.datas);
                 }).catch(() => {
                     this.loading = false;
                 });
-            },
-            setToolTip(datas) {
-
             }
         }
     }
 </script>
 <style scoped>
-   
     .echart-ex1 {
         display: inline-block;
         width: 99.6%;
@@ -139,7 +142,7 @@
         box-sizing: border-box;
     }
 
-     .head-title {
+    .head-title {
         font-family: 'Arial Normal', 'Arial';
         font-weight: 600;
         font-style: normal;
@@ -155,7 +158,7 @@
     }
 
     .head-title p {
-        display: inline-grid;
+        display: inline-block;
     }
 
     .line-select {

@@ -2,7 +2,6 @@ import request from '../utils/request';
 import VueCookies from 'vue-cookies';
 
 let token = VueCookies.get("Yili-Admin-Token");
-token = token ? token : "123";
 export const requestData = (url,method,query) => {
     if('get' == method && query){
         url += "?";

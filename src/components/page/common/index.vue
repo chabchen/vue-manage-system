@@ -2,7 +2,7 @@
     <div class="container">
         <div :style="{height: div_height}"></div>
         <div class="fixed_top" ref="elememt">
-            <div class="filter-handler" @click="toggleFilterBar"><span>筛选器</span></div>
+            <div class="filter-handler" @click="toggleFilterBar"><span>筛选器<i :class="select_icon"></i></span></div>
             <async-load-comp v-show="show_selector" v-for="(item,index) in comps" :key="index+'index'" :app="item.app" :prop="item.prop"></async-load-comp>
         </div>
         <async-load-comp v-for="(item,index) in comps2" :key="index" :app="item.app" :prop="item.prop"></async-load-comp>
@@ -22,20 +22,20 @@
                 show_selector: true,
                 div_height: "",
                 fixed_height: "",
+                select_icon: "el-icon-arrow-down"
             }
         },
         created() {
-            if (!this.$route.query.reportId) { return; }
-            this.reportId = this.$route.query.reportId;
-            this.loadReportConfig();
-            // let height= this.$refs.qqqqqq;  //100
-        //    console.log(height)      
+            this.reportId = this.$route.fullPath.substring(this.$route.fullPath.indexOf("//")+2);
+            if(!this.reportId){return;}
+            this.loadReportConfig(); 
         },
         watch: {
             $route(newValue, oldValue) {
                 this.comps = [];
                 this.comps2 = [];
-                this.reportId = newValue.query.reportId;
+                this.reportId = newValue.fullPath.substring(newValue.fullPath.indexOf("//")+2);
+                if(!this.reportId){return;}
                 this.loadReportConfig();
             }
         },
@@ -100,6 +100,7 @@
                 }
             },
             toggleFilterBar(){
+                this.select_icon = this.select_icon=='el-icon-arrow-down'?'el-icon-arrow-up':'el-icon-arrow-down'
                 this.show_selector = !this.show_selector;
                 this.div_height= this.show_selector ? this.fixed_height : '0';
             }

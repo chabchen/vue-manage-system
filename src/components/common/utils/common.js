@@ -65,7 +65,7 @@ export function getComponents() {
  * @param {*} limitFields 限制参数字段集 
  * @param {*} lastDateFlag 取日期区间最后一个值
  */
-export function setParams(sql,params,limitFields,lastDateFlag,firstDateFlag){
+export function setParams(sql,params,limitFields,lastDateFlag,noTime){
     if(!params){return "";}
     if (!params.searchSelect && !params.searchDate) { return ""; }
     let param = "";let param2 = "";
@@ -94,13 +94,10 @@ export function setParams(sql,params,limitFields,lastDateFlag,firstDateFlag){
     }
     if (params.searchDate) { 
         for (let obj of params.searchDate) {//获取日期筛选器的值
-            if (!obj.value || !obj.value.length || !obj.dataShow) { continue; }
+            if (!obj.value || !obj.value.length || !obj.dataShow || noTime) { continue; }
             if (Array.isArray(obj.value)) {
                 param += " " + obj.type + " " + obj.tableField + " >= " + obj.value[0];
                 param += " " + obj.type + " " + obj.tableField + " <= " + obj.value[1];
-                if(firstDateFlag){
-                    param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value[0];
-                }
                 if(lastDateFlag){
                     param2 += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value[1];
                 }                

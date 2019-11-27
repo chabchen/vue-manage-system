@@ -3,19 +3,21 @@
         <div class="head-title">
             <p>{{title}}</p>
         </div>
-        <div style="overflow: auto;">
+        <div style="overflow: auto;" v-if="!nodataFlag">
             <el-table :data="tableData" border stripe :show-summary="showSummary" max-height="460">
                 <template v-for="(col, index) in tableColumns">
-                    <el-table-column show-overflow-tooltip :key="index" :prop="col.prop" :label="col.label"></el-table-column>
+                    <el-table-column show-overflow-tooltip :key="index" :prop="col.prop" :label="col.label" :sortable="col.sortable"></el-table-column>
                 </template>
             </el-table>
         </div>
-
+        <div v-show="nodataFlag"><nodata/></div>
     </div>
 </template>
 
 <script>
+   import nodata from '../nodata.vue'
     export default {
+        components: { nodata },
         props: { prop: Object },
         data() {
             return {
@@ -23,7 +25,8 @@
                 widthData: '100%',
                 title: '',
                 tableColumns: [],
-                tableData: []
+                tableData: [],
+                nodataFlag: false
             }
         },
         computed: {
@@ -49,28 +52,8 @@
             this.url = this.prop.config.url;
         },
         methods: {
-            // getParams(params) {
-            //     if (!params || (!params.searchSelect && !params.searchDate)) { return ""; }
-            //     let param = "";
-            //     if (params.searchSelect) {
-            //         for (let obj of params.searchSelect) {
-            //             if (!obj.value || !obj.value.length) { continue; }
-            //             if (obj.type && obj.tableField && Array.isArray(obj.value)) {
-            //                 param += " " + obj.type + " " + obj.tableField + " in " + " ('" + obj.value.join("','") + "')";
-            //             }
-            //             if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
-            //                 param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
-            //             }
-            //         }
-            //     }
-            //     if (!params.searchDate) { return param }
-            //     for (let obj of params.searchDate) {
-            //         if (!obj.value) { continue; }
-            //         param += " " + obj.type + " " + obj.tableField + " " + obj.operation + " " + obj.value;
-            //     }
-            //     return param;
-            // },
             loadReportData() {
+                this.nodataFlag = false;
                 this.loading = true;
                 let sql = this.prop.sqls;
                 let limitFields = this.prop.config.limitFields;
@@ -80,6 +63,7 @@
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
+                    if (res.datas.code == 502) { this.nodataFlag = true; }
                     this.tableData = res.datas;
                 }).catch(() => {
                     this.loading = false;
@@ -110,12 +94,12 @@
     }
 
     .head-title p {
-        display: inline-grid;
+        display: inline-block;
     }
 
     .line-box {
         box-sizing: border-box;
-        display: inline-grid;
+        display: inline-block;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);

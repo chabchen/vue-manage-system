@@ -1,11 +1,11 @@
 <template>
-    <div :style="{width:widthData,gridRow:'row-start 2 / row-end 3'}" class="wrapper" @click="routerTo" v-loading="loading">
+    <div v-show="radioCard" :style="{width:widthData,marginRight:rightPx}" class="wrapper" @click="routerTo" v-loading="loading">
         <div class="title_style" v-if="items.card_title">
-            <span class="blue_span">
-                    &nbsp&nbsp{{items.card_title}}    
+            <span class="blue_span" v-if="items.card_title !=' '">
+                <p class="card_text">&nbsp&nbsp{{items.card_title}}</p>
             </span>
         </div>
-        <div class="wrap" style="height: 120px;">
+        <div v-show="!nodataFlag" class="wrap" style="height: 120px;">
             <div class="item" style="margin: auto">
                 <div class="c_title" style="text-align: center">
                     {{items.label}}
@@ -33,11 +33,14 @@
                 </div>
             </div>
         </div>
+        <div v-show="nodataFlag"><nodata/></div>
     </div>
 </template>
 
 <script>
+    import nodata from '../nodata.vue'
     export default {
+        components: { nodata },
         props: { prop: Object },
         data() {
             return {
@@ -47,10 +50,14 @@
                 params: "",
                 url: "",
                 reportType: "dayReport",
-                days: "",
+                days: "1",
                 lastDay: "",
-                sqlFlag: false,
+                sqlFlag: true,
                 fieldFlag: "",
+                nodataFlag: false,
+                rightPx: "",
+                radioCard: true,
+                cardFlag: "",
             }
         },
         created() {
@@ -59,6 +66,10 @@
             this.sql2 = this.prop.config.sql2;
             if (this.prop.config.widthData) {
                 this.widthData = this.prop.config.widthData;
+            }
+            this.rightPx = this.prop.config.rightPx;
+            if(this.prop.config.hasOwnProperty('radioCard')){
+                this.radioCard = this.prop.config.radioCard;
             }
         },
         computed: {
@@ -70,6 +81,7 @@
             changeParams(newValue) {
                 if (!newValue) { return; }
                 this.params = newValue;
+                this.changeRadio(newValue);
                 this.loadReportData(newValue);
                 this.prop.params = "";
             }
@@ -79,30 +91,30 @@
                 if (!params || (!params.searchDate && params.searchSelect)) { return; }
                 if (params.searchSelect) {
                     for (let obj of params.searchSelect) {
-                        // if (obj.tableField == "reportType") {//奶量分析求日均值
-                        //     this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
-                        // }
+                        if (obj.tableField == "reportType") {//求日均值
+                            this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
+                        }
                         if (obj.tableField != "sqlFlag") { continue; }
                         this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
-                if(!params.searchDate){return;}
+                if (!params.searchDate) { return; }
                 for (let obj of params.searchDate) {
                     if (!obj.dataShow) { continue; }
                     if (this.fieldFlag && this.fieldFlag != obj.tableField) {
                         this.sqlFlag = !this.sqlFlag;
                     }
                     this.fieldFlag = obj.tableField;
-                    //奶量分析求日均值
-                    //if (Array.isArray(obj.value)) { this.getDays(obj.value);}
+                    if (Array.isArray(obj.value)) { this.getDays(obj.value);}
                 }
             },
             getDays(dates) {//获取选中的日期天数
-                if(!dates){return;}
+                if (!dates) { return; }
                 let start = dates[0];
                 let end = dates[1];
                 let startDate;
-                let endDate
+                let endDate;
+                let num = 1;
                 if (this.reportType == "dayReport") {//日报
                     this.lastDay = end;
                     startDate = new Date(start.substring(0, 4), parseInt(start.substring(4, 6)) - 1, start.substring(6, 8));
@@ -112,28 +124,53 @@
                     endDate = new Date(end.substring(0, 4), end.substring(4, 6));
                     let day = new Date(endDate.getTime() - 86400000).getDate();
                     this.lastDay = end + "" + day;
+                    num = 0;
                 }
                 let days = endDate.getTime() - startDate.getTime();
-                this.days = parseInt(days / (1000 * 60 * 60 * 24)) + 1;
+                this.days = parseInt(days / (1000 * 60 * 60 * 24)) + num;
             },
             loadReportData(params) {
                 this.loading = true;
+                this.nodataFlag = false;
                 let sql = this.prop.sqls;
                 let limitFields = this.prop.config.limitFields;
                 let lastDateFlag = this.prop.config.lastDateFlag;
-                if (!sql || !this.url) { this.loading = false; return; }
+                let noTime = this.prop.config.noTime;
+                if (!sql || !this.url || !this.radioCard) { this.loading = false; return; }
                 this.getSqlFlag(params);
                 if (this.sqlFlag && this.sql2) { sql = this.sql2; }
-                //sql = sql.replace("reportDate", this.lastDay);//奶量分析求日均值
-                sql = this.$setParams(sql, this.params,limitFields,lastDateFlag);
+                while(sql.indexOf("dateDays") > -1){
+                    sql = sql.replace("dateDays", this.days);//求日均值
+                }
+                sql = this.$setParams(sql, this.params, limitFields, lastDateFlag,noTime);
                 this.resetData();
+                this.autoWidth();
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
                     if (!res.datas) { return; }
+                    if (res.datas.code == 502) { this.nodataFlag = true; }
                     this.setCardData(res.datas[0]);
                 }).catch(() => {
                     this.loading = false;
                 });
+            },
+            changeRadio(params){
+                if (!params || (!params.searchDate && params.searchSelect)||!this.prop.config.hasOwnProperty('radioCard')) { return; }
+                for (let obj of params.searchDate) {
+                    if (!obj.dataShow) { continue; }
+                    if (this.cardFlag && this.cardFlag != obj.tableField) {
+                        this.radioCard = !this.radioCard;
+                    }
+                    this.cardFlag = obj.tableField;
+                }
+            },
+            autoWidth(){
+                if(this.prop.config.hasOwnProperty('rightPx2')){
+                    this.rightPx = 0
+                    if(this.sqlFlag){
+                        this.rightPx = this.prop.config.rightPx2
+                    }
+                }
             },
             resetData() {
                 if (!this.items) { return; }
@@ -164,8 +201,9 @@
 <style scoped>
     .wrapper {
         padding: 5px;
-        display: inline-grid;
+        display: inline-block;
         box-sizing: border-box;
+        vertical-align: top
     }
 
     .wrap {
@@ -188,11 +226,12 @@
         line-height: 25px;
         margin: 0 3px;
         display: inline-block;
-        width: 200px;
+        max-width: 152px;
     }
 
     .title_style {
         margin: 10px 0;
+        height: 15px;
     }
 
     .blue_span {
@@ -203,6 +242,10 @@
     }
 
     span {
+        font-size: 14px;
         vertical-align: middle;
+    }
+    .card_text{
+        width: 10rem;
     }
 </style>
