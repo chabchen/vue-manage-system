@@ -66,11 +66,9 @@
                         if (obj.type && obj.tableField && !Array.isArray(obj.value)) {
                             param += " " + obj.type + " " + obj.tableField + " " + obj.operation + "'" + obj.value + "'";
                         }
-                        //多sql情况下根据筛选器选择对应的sql
-                        if (obj.tableField == "sqlFlag") {
-                            //酸奶调拨【吨|件】切换
-                            this.sqlFlag = obj.value == "sql2" ? true : false;
-                        }
+                        //酸奶调拨【吨|件】切换sql
+                        if (obj.tableField != "sqlFlag") {continue;}
+                        this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
                 if (!params.searchDate) { return param }

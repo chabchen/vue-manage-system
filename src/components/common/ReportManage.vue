@@ -35,8 +35,8 @@
                 <el-table-column label="操作" width="200">
                     <template slot-scope="scope">
                         <el-button size="small" icon="el-icon-edit" @click="openForm(scope.$index, scope.row)">编辑</el-button>
-                        <el-button icon="el-icon-close" v-if="scope.row.id > '1'" size="small" type="danger" @click="deleteRow(scope.row.id)">删除</el-button>
-                        <el-button icon="el-icon-close" v-else size="small" type="danger" @click="deleteRow(scope.row.id)">删除</el-button>
+                        <el-button icon="el-icon-close" disabled="disabled"  v-if="scope.row.id > '1'" size="small" type="danger" @click="deleteRow(scope.row.id)">删除</el-button>
+                        <el-button icon="el-icon-close" disabled="disabled" v-else size="small" type="danger" @click="deleteRow(scope.row.id)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -175,6 +175,8 @@
             },
             // 删除
             deleteRow(rowId) {
+                this.$message.warning("无删除权限!!");
+                return;
                 if (rowId < 2) {
                     this.$message.warning("根目录不可删除!!");
                     return;

@@ -81,6 +81,7 @@
                         if (obj.tableField == "reportType") {//求日均值
                             this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
                         }
+                         //酸奶调拨【吨|件】切换sql
                         if (obj.tableField != "sqlFlag") { continue; }
                         this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
@@ -191,8 +192,8 @@
                 this.chartData.rows = [];
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
+                    if(res.code == "502"){this.nodataFlag = true;}
                     if (!res.datas) {return; }
-                    if(res.datas.code == 502){this.nodataFlag = true;}              
                     this.setToolTip(res.datas);
                     this.setData(res.datas);
                 }).catch((e) => {
@@ -231,8 +232,9 @@
                 
             },
             setToolbox(){
-                if(!this.chartExtend.toolbox || this.chartExtend.toolbox.feature){return;}
+                if(!this.chartExtend.toolbox || !this.chartExtend.toolbox.feature){return;}
                 let icon = window.config.eyeURL+"static/img/view_off.png";
+                let _this = this;
                 this.chartExtend.toolbox.feature = {
                     myTool: {
                         show: true,
@@ -259,7 +261,7 @@
 </script>
 <style scoped>
     .echart-ex1 {
-        display: inline-grid;
+        display: inline-block;
         width: 99.6%;
         border-width: 0px;
         background: inherit;
@@ -285,7 +287,7 @@
     }
 
     .head-title p {
-        display: inline-block;
+        display: inline-grid;
     }
 
     .lineBar-select {
@@ -295,6 +297,6 @@
 
     .line-box {
         box-sizing: border-box;
-        display: inline-block;
+        display: inline-grid;
     }
 </style>

@@ -52,7 +52,7 @@
                 reportType: "dayReport",
                 days: "1",
                 lastDay: "",
-                sqlFlag: true,
+                sqlFlag: false,
                 fieldFlag: "",
                 nodataFlag: false,
                 rightPx: "",
@@ -94,8 +94,6 @@
                         if (obj.tableField == "reportType") {//求日均值
                             this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
                         }
-                        if (obj.tableField != "sqlFlag") { continue; }
-                        this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
                 if (!params.searchDate) { return; }
@@ -147,8 +145,8 @@
                 this.autoWidth();
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
+                    if (res.code == "502") { this.nodataFlag = true; }
                     if (!res.datas) { return; }
-                    if (res.datas.code == 502) { this.nodataFlag = true; }
                     this.setCardData(res.datas[0]);
                 }).catch(() => {
                     this.loading = false;
@@ -167,7 +165,7 @@
             autoWidth(){
                 if(this.prop.config.hasOwnProperty('rightPx2')){
                     this.rightPx = 0
-                    if(this.sqlFlag){
+                    if(!this.sqlFlag){
                         this.rightPx = this.prop.config.rightPx2
                     }
                 }
@@ -224,9 +222,9 @@
 
     .bottom-span {
         line-height: 25px;
-        margin: 0 3px;
+        margin: 0 10px;
         display: inline-block;
-        max-width: 152px;
+        max-width: 200px;
     }
 
     .title_style {

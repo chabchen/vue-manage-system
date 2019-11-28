@@ -4,7 +4,7 @@
             <p>{{title}}</p>
         </div>
         <div style="overflow: auto;" v-if="showTable && !nodataFlag">
-            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border :max-height="maxHeight" min-height="220">
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border :max-height="maxHeight" style="min-height: 220px;">
                 <template v-for="(col, index) in tableColumns">
                     <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
                         <template v-for="(col2,index2) in col.children">
@@ -88,8 +88,6 @@
                         if (obj.tableField == "reportType") {//求日均值
                             this.reportType = obj.value == "日报" ? "dayReport" : "monthReport";
                         }
-                        if (obj.tableField != "sqlFlag") { continue; }
-                        this.sqlFlag = obj.value == "sql2" ? true : false;
                     }
                 }
                 if (!params.searchDate) { return; }
@@ -181,8 +179,8 @@
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.showTable = true;
                     this.loading = false;
+                    if (res.code == "502") { this.nodataFlag = true; }
                     if (!res.datas) { return; }
-                    if (res.datas.code == 502) { this.nodataFlag = true; }
                     for (let row of res.datas) {
                         if (!this.prop.config.noSpan) { row.level = level; }                        
                         if (!this.concatFields || !this.concatFields.length) {continue;}
@@ -300,13 +298,13 @@
     }
 
     .head-title p {
-        display: inline-block;
+        display: inline-grid;
     }
 
     .line-box {
         min-height: 250px;
         box-sizing: border-box;
-        display: inline-block;
+        display: inline-grid;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);

@@ -4,7 +4,7 @@
             <p>{{title}}</p>
         </div>
         <div style="overflow: auto;" v-if="showTable">
-            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" stripe border max-height="460">
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" stripe border max-height="460" style="min-height: 400px;">
                 <template v-for="(col, index) in tableColumns">
                     <el-table-column width="150" v-if="col.children" :prop="col.prop" :label="col.label" align="center">
                         <template v-for="(col2,index2) in col.children">
@@ -216,14 +216,14 @@
     }
 
     .head-title p {
-        display: inline-block;
+        display: inline-grid;
     }
 
     .line-box {
         min-height: 400px;
         box-sizing: border-box;
         margin-bottom: 20px;
-        display: inline-block;
+        display: inline-grid;
         -moz-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         -webkit-box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);
         box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.105882352941176);

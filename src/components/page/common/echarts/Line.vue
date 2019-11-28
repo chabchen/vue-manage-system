@@ -70,12 +70,7 @@
         methods: {
             getSqlFlag(params) { //根据维度切换对应的sql
                 if (!params || (!params.searchDate && params.searchSelect)) { return; }
-                if (params.searchSelect) {
-                    for (let obj of params.searchSelect) {
-                        if (obj.tableField != "sqlFlag") { continue; }
-                        this.sqlFlag = obj.value == "sql2" ? true : false;
-                    }
-                }
+                
                 if (!params.searchDate) { return; }
                 for (let obj of params.searchDate) {
                     if (!obj.dataShow) { continue; }
@@ -96,8 +91,8 @@
                 this.chartData.rows = [];
                 this.$requestData(this.url, 'post', { params: newSql }).then(res => {
                     this.loading = false;
+                    if (res.code == "502") { this.nodataFlag = true; }
                     if (!res.datas) { return; }
-                    if (res.datas.code == 502) { this.nodataFlag = true; }
                     this.chartData.rows = res.datas;
                     this.setData(res.datas);
                 }).catch(() => {
@@ -161,7 +156,7 @@
     }
 
     .head-title p {
-        display: inline-block;
+        display: inline-grid;
     }
 
     .line-select {
@@ -171,7 +166,7 @@
 
     .line-box {
         box-sizing: border-box;
-        display: inline-block;
+        display: inline-grid;
         margin: 0;
     }
 </style>

@@ -62,8 +62,8 @@
                 sql = this.$setParams(sql, this.params, limitFields, lastDateFlag);
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.loading = false;
+                    if (res.code == "502") { this.nodataFlag = true; }
                     if (!res.datas) { return; }
-                    if (res.datas.code == 502) { this.nodataFlag = true; }
                     this.tableData = res.datas;
                 }).catch(() => {
                     this.loading = false;
