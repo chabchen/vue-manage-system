@@ -11,11 +11,8 @@ export const requestData = (url,method,query) => {
         url = url.replace("&","");
         url = encodeURI(url);
     }
+    url = url.replace("data","list");
     if(query){query.token = token;}
-    return request({
-        url: url,
-        method: method,
-        data: query
-    })
+    return request({url: url,method: method,data: query})
 }
 
