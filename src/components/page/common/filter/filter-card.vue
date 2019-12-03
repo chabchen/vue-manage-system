@@ -1,5 +1,5 @@
 <template>
-    <div v-show="radioCard" :style="{width:widthData,marginRight:rightPx}" class="wrapper" @click="routerTo" v-loading="loading">
+    <div v-show="radioCard" :style="{width:widthData,marginRight:rightPx,cursor:cursorFlag}" class="wrapper" @click="routerTo" v-loading="loading">
         <div class="title_style" v-if="items.card_title">
             <span class="blue_span" v-if="items.card_title !=' '">
                 <p class="card_text">&nbsp&nbsp{{items.card_title}}</p>
@@ -58,9 +58,11 @@
                 rightPx: "",
                 radioCard: true,
                 cardFlag: "",
+                cursorFlag: ""
             }
         },
         created() {
+            this.cursorFlag = this.prop.config.indexId? 'pointer' : "";
             this.items = this.prop.config.items;
             this.url = this.prop.config.url;
             this.sql2 = this.prop.config.sql2;
@@ -189,7 +191,7 @@
             },
             routerTo() {
                 if (!this.prop.config.indexId) { return; }
-                this.$router.push({ path: 'index', query: { reportId: this.prop.config.indexId } });
+                this.$router.push({ path: this.prop.config.indexId});
             }
         }
     }

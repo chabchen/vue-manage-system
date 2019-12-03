@@ -49,6 +49,8 @@
                 url: "",
                 sqlFlag: false,
                 fieldFlag: "",//用于维度切换
+                replaceField: "",
+                dateData: "",
                 sql2: "",
                 concatFields: [],
                 tableColumns: [],
@@ -98,6 +100,7 @@
                     }
                     this.fieldFlag = obj.tableField;
                     if (Array.isArray(obj.value)) { this.getDays(obj.value);}
+                    this.dateData = obj.value;
                 }
             },
             getDays(dates) {//获取选中的日期天数
@@ -167,14 +170,21 @@
                 let sql = this.prop.sqls;
                 let limitFields = this.prop.config.limitFields;
                 let lastDateFlag = this.prop.config.lastDateFlag;
+                this.replaceField = this.prop.config.replaceField;//用于替换sql中对应的字符
+                let noTime = this.prop.config.noTime;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(this.params);
+                if(this.replaceField && this.dateData){
+                    while(sql.indexOf(this.replaceField) > -1){
+                        sql = sql.replace(this.replaceField, this.dateData);
+                    }
+                }
                 if (this.sqlFlag && this.sql2) { sql = this.sql2; }
                 while(sql.indexOf("dateDays") > -1){
                     sql = sql.replace("dateDays", this.days);//求日均值
                 }
                 sql = this.dynamicGroupBy(sql, level);
-                sql = this.$setParams(sql, this.params, limitFields, lastDateFlag);
+                sql = this.$setParams(sql, this.params, limitFields, lastDateFlag,noTime);
                 this.loading = true;
                 this.$requestData(this.url, 'post', { params: sql }).then(res => {
                     this.showTable = true;

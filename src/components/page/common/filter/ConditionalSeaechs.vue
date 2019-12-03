@@ -61,6 +61,7 @@
         },
         created() {
             this.searchData = this.prop.config.searchData;
+            this.searchData.divWidth = this.searchData.divWidth ? this.searchData.divWidth : '30px';
             this.initFilterData();
         },
         methods: {
@@ -278,8 +279,8 @@
 
     .select_posion {
         float: right;
-        margin-top: 40px;
-        margin-left: 30px;
+        margin-top: 34px;
+        /* margin-left: 30px; */
         margin-bottom: 10px;
     }
 </style>

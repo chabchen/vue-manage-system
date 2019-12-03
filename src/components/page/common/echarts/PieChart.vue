@@ -4,7 +4,7 @@
             <div v-if="selectData.title" class="head-title">
                 <p>{{selectData.title}}</p>
                 <div v-show="selectData.showDetail" class="line-select">
-                    <router-link :to="{ path: 'index', query: { reportId: selectData.detailId }}">
+                    <router-link :to="{ path: selectData.detailId}">
                         查看原因
                     </router-link>
                 </div>
@@ -40,6 +40,8 @@
                 colors: ["#0084d5", "#13caae", "#6d68f0", "#0c6e5e"],
                 params: "",
                 url: "",
+                replaceField: "",
+                dateData: "",
                 reportType: "dayReport",
                 sqlFlag: false,
                 sql2: "",
@@ -86,6 +88,7 @@
                         this.sqlFlag = !this.sqlFlag;
                     }
                     this.fieldFlag = obj.tableField;
+                    this.dateData = obj.value;
                 }
             },
             loadReportData(params) {
@@ -95,8 +98,15 @@
                 let limitFields = this.prop.config.limitFields;
                 let lastDateFlag = this.prop.config.lastDateFlag;
                 let nonDateSegment = this.prop.config.nonDateSegment;
+                this.replaceField = this.prop.config.replaceField;//用于替换sql中对应的字符
+                let noTime = this.prop.config.noTime;
                 if (!sql || !this.url) { this.loading = false; return; }
                 this.getSqlFlag(params);
+                if(this.replaceField && this.dateData){
+                    while(sql.indexOf(this.replaceField) > -1){
+                        sql = sql.replace(this.replaceField, this.dateData);
+                    }
+                }
                 if (this.sqlFlag && this.sql2) { sql = this.sql2; }
                 let newSql = "";
                 if (nonDateSegment) {
@@ -107,7 +117,7 @@
                     }
                     newSql = sql;
                 } else {
-                    newSql = this.$setParams(sql, params, limitFields, lastDateFlag);
+                    newSql = this.$setParams(sql, params, limitFields, lastDateFlag,noTime);
                 }
                 this.chartData.rows = [];
                 this.$requestData(this.url, 'post', { params: newSql }).then(res => {
