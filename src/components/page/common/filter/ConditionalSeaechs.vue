@@ -27,7 +27,6 @@
 </template>
 
 <script>
-    import filterSelect from './filter-select.vue'
     import asyncLoadComp from '../asyncLoadComp.vue'
     import { requestData } from '@/api/RequestData';
     export default {
@@ -44,6 +43,7 @@
                 data: [],
                 params: "",
                 radioFlag: false,
+                dataSource: "",
             }
         },
         computed: {
@@ -61,6 +61,7 @@
         },
         created() {
             this.searchData = this.prop.config.searchData;
+            this.dataSource = this.prop.dataSource;
             this.searchData.divWidth = this.searchData.divWidth ? this.searchData.divWidth : '30px';
             this.initFilterData();
         },
@@ -97,7 +98,7 @@
                     let str = obj.sql.split("1=1");
                     let sql = str[0] + "1=1 " + condition + str[1];
                     this.dataFlag = !this.dataFlag;
-                    requestData(obj.url, 'post', { params: sql }).then(res => {
+                    requestData(obj.url, 'post', { params: sql,dataSource: this.dataSource }).then(res => {
                         if (!res.datas || !res.datas.length) { return; }
                         let options = [];
                         for (let data of res.datas) {
@@ -147,7 +148,7 @@
                         if (obj.value && obj.options.length) { obj.value = obj.options[0].value; }
                         continue;
                     }
-                    await requestData(obj.url, 'post', { params: obj.sql }).then(res => {
+                    await requestData(obj.url, 'post', { params: obj.sql,dataSource: this.dataSource }).then(res => {
                         if (!res.datas || !res.datas.length) { return; }
                         let options = [];
                         for (let data of res.datas) {

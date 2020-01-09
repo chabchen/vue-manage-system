@@ -17,19 +17,20 @@ var routes = [{
             component: () => import('../components/page/Dashboard.vue'),
             meta: { title: '系统首页' }
         },
-        // {
-        //     path: '/index',
-        //     component: () => import( '../components/page/common/index.vue'),
-        //     meta: { title: '报表数据页' }
-        // },
+        {
+            path: '/line',
+            component: () => import( '../components/page/common/echarts/Line.vue'),
+            meta: { title: '报表数据页' }
+        },
         {
             path: '/index1',
             component: () => import('../components/page/common/index1.vue'),
             meta: { title: '测试' }
         },
         {
-            path: '/pieChart',
-            component: resolve => require(['../components/page/common/filter/filter-select.vue'], resolve),
+            path: '/dataSourceManage',
+            component: resolve => require(['../components/common/DataSourceManage.vue'], resolve),
+            meta: { title: '数据源管理', permission: true }
         },
         {
             path: '/menuManage',
@@ -44,13 +45,8 @@ var routes = [{
         {
             path: '/reportDetailManage',
             component: resolve => require(['../components/common/ReportDetailManage.vue'], resolve),
-            meta: { title: '报表配置管理', permission: true }
+            meta: { title: '报表明细配置', permission: true }
         },
-        // {
-        //     path: '/Form1',
-        //     component: () => import('../components/page/common/form/Form.vue'),
-        //     meta: { title: '基础表格' }
-        // },
         {
             path: '/tableGrid',
             component: () => import('../components/page/common/table/TableGrid.vue'),

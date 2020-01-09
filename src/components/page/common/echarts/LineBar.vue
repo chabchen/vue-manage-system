@@ -243,7 +243,7 @@
             },
             setToolbox(){
                 if(!this.chartExtend.toolbox || !this.chartExtend.toolbox.feature){return;}
-                let icon = window.config.eyeURL+"static/img/view_off.png";
+                let icon = require('@/assets/img/view_off.png');
                 let _this = this;
                 this.chartExtend.toolbox.feature = {
                     myTool: {
@@ -258,9 +258,9 @@
                 }
             },
             changViewData(iconFlag) {
-                let icon = window.config.eyeURL+"static/img/view_off.png";
-                let icon2 = window.config.eyeURL+"static/img/view.png";
-                this.chartExtend.toolbox.feature.myTool.icon = this.iconFlag ? 'image://' + icon2 : 'image://' + icon;
+                let icon = require('@/assets/img/view_off.png');
+                let icon2 = require('@/assets/img/view.png');
+                this.chartExtend.toolbox.feature.myTool.icon = this.iconFlag ? 'image://' + icon2: 'image://' + icon;
                 this.chartExtend.series.label.normal.show = this.iconFlag;
             },
             changeSelect(value) {

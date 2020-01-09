@@ -1,11 +1,10 @@
 import axios from 'axios';
 
 window.config = {
-    eyeURL: "http://10.60.138.84:8081/yili2/",
-    eyeURL: "http://10.60.138.201/gmv/",
-    baseURL:"http://10.60.138.84:8081/yili2/api",
-    mapUrl: "/json/map/",
-    //baseURL:"http://127.0.0.1:8088/api",
+    // baseURL:"http://10.60.138.84:8081/yili2/api",
+    baseURL: "http://192.168.10.148:8080/report/api",
+    //mapUrl: "/json/map/",
+    //baseURL:"/report/api",
     // baseURL:"/gmv/api",
     // mapUrl: "/gmv/json/map/",
     // baseURL: "/yili2/api",

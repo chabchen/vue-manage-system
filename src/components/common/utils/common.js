@@ -43,6 +43,7 @@ export function getComponents() {
         // { label: '筛选器2', value: 'filter/ConditionalSeaech' },
         { label: '卡片1', value: 'filter/filter-card' },
         { label: '柱状图-折线图', value: 'echarts/LineBar' },
+        { label: '柱状图-折线图2', value: 'echarts/LineBar2' },
         { label: '堆叠柱状图', value: 'echarts/BarStack' },
         { label: '折线图', value: 'echarts/Line' },
         { label: '饼状图', value: 'echarts/PieChart' },
@@ -121,4 +122,48 @@ function concatParams(sql,param,param2){
     newSql = newSql + sqlArr[sqlArr.length-1];
     newSql = newSql.replace("groupby","group by");
     return newSql;
+}
+
+
+/**
+ * 参数赋值
+ * @param {*} sql 
+ * @param {*} params 
+ */
+export function getParam(sql,params){
+    if(!params){return "";}
+    if (!params.searchSelect && !params.searchDate) { return ""; }
+    if (params.searchSelect) {//获取下拉框筛选器的值
+        for (let obj of params.searchSelect) {
+            if (!obj.tableField || !obj.value || !obj.value.length) { continue; }
+            let param = "";
+            if (Array.isArray(obj.value)) {
+                param = " ('" + obj.value.join("','") + "')";
+            }
+            if (!Array.isArray(obj.value)) {
+                param = "'" + obj.value + "'";
+            }
+            sql = setParamValue(sql,obj.tableField,param);
+        }
+    }
+    if (params.searchDate) { 
+        for (let obj of params.searchDate) {//获取日期筛选器的值
+            if (!obj.tableField || !obj.value || !obj.value.length || !obj.dataShow) { continue; }
+            if (Array.isArray(obj.value) && Array.isArray(obj.tableField)) {
+                sql = setParamValue(sql,obj.tableField[0],obj.value[0]);
+                sql = setParamValue(sql,obj.tableField[1],obj.value[1]);
+                continue;
+            } 
+            sql = setParamValue(sql,obj.tableField,obj.value);
+        }
+    }
+    return sql;
+}
+
+function setParamValue(sql,tableField,param){
+    if(!param){return;}
+    while(sql.indexOf('pg_'+tableField) > -1){
+        sql = sql.replace("--","").replace('pg_'+tableField,param);
+    }
+    return sql;
 }

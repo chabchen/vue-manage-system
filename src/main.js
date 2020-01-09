@@ -11,7 +11,7 @@ import './assets/css/icon.css';
 import './components/common/directives';
 import 'babel-polyfill';
 import { requestData } from './api/RequestData';
-import {setFinanceVal,setDecimalVal,getComponents,setParams} from './components/common/utils/common.js'
+import {setFinanceVal,setDecimalVal,getComponents,setParams,getParam} from './components/common/utils/common.js'
 
 import VueCookies from 'vue-cookies'
 Vue.use(VueCookies);
@@ -30,6 +30,8 @@ Vue.prototype.$setDecimalVal = setDecimalVal;
 Vue.prototype.$getComponents = getComponents;
 //参数赋值
 Vue.prototype.$setParams = setParams;
+//参数赋值2
+Vue.prototype.$getParam = getParam;
 
 
 

@@ -56,7 +56,7 @@
                 <el-form-item label="文件路径">
                     <el-input v-model="formData.reportId" disabled></el-input>
                 </el-form-item>
-                <el-form-item label="类型">
+                <el-form-item label="说明">
                     <el-input v-model="formData.type"></el-input>
                 </el-form-item>
             </el-form>

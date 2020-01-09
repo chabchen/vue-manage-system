@@ -18,7 +18,7 @@
                 <el-input v-model="select_word" placeholder="筛选关键词" class="handle-input mr10"></el-input>
             </div>
             <el-table stripe border height="650" :row-class-name="handleSelectedBg" @row-click="rowclick" :data="data" ref="multipleTable"
-                @selection-change="handleSelectionChange" :default-sort="{prop: 'date', order: 'descending'}">
+                @selection-change="handleSelectionChange" :default-sort="{prop: 'orderNumber', order: 'ascending'}">
                 <el-table-column type="selection" width="55"></el-table-column>
                 <el-table-column prop="name" label="名称" sortable>
                 </el-table-column>
@@ -28,6 +28,10 @@
                 </el-table-column>
                 <el-table-column prop="sqls" label="sql配置" show-overflow-tooltip>
                 </el-table-column>
+                <el-table-column prop="sql2" label="sql2配置" show-overflow-tooltip>
+                </el-table-column>
+                <el-table-column prop="sql3" label="sql3配置" show-overflow-tooltip>
+                </el-table-column>
                 <el-table-column prop="orderNumber" label="序号" sortable>
                 </el-table-column>
                 <el-table-column prop="remark" label="备注">
@@ -35,8 +39,8 @@
                 <el-table-column label="操作" width="200">
                     <template slot-scope="scope">
                         <el-button size="small" icon="el-icon-edit" @click="openForm(scope.$index, scope.row)">编辑</el-button>
-                        <el-button icon="el-icon-close" disabled="disabled" v-if="scope.row.id > '1'" size="small" type="danger" @click="deleteRow(scope.row.id)">删除</el-button>
-                        <el-button icon="el-icon-close" disabled="disabled" v-else size="small" type="danger" @click="deleteRow(scope.row.id)">删除</el-button>
+                        <el-button icon="el-icon-close"  v-if="scope.row.id > '1'" size="small" type="danger" @click="deleteRow(scope.row.id)">删除</el-button>
+                        <el-button icon="el-icon-close"  v-else size="small" type="danger" @click="deleteRow(scope.row.id)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -48,7 +52,7 @@
         </div>
 
         <!-- 新增弹出框 -->
-        <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" :close-on-click-modal="false" width="30%">
+        <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" :close-on-click-modal="false" width="50%">
             <el-form :model="formData" label-width="70px">
                 <el-form-item label="备注">
                     <el-input v-model="formData.remark"></el-input>
@@ -65,11 +69,23 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
+                <el-form-item label="数据源">
+                    <el-select v-model="formData.dataSource" filterable placeholder="请选择">
+                        <el-option v-for="item in dataSources" :key="item.id" :label="item.name" :value="item.name">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
                 <el-form-item label="配置信息">
-                    <el-input type="textarea" rows="12" v-model="formData.config"></el-input>
+                    <el-input type="textarea" rows="3" v-model="formData.config"></el-input>
                 </el-form-item>
                 <el-form-item label="sql配置">
-                    <el-input type="textarea" rows="12" v-model="formData.sqls"></el-input>
+                    <el-input type="textarea" rows="3" v-model="formData.sqls"></el-input>
+                </el-form-item>
+                <el-form-item label="sql2配置">
+                    <el-input type="textarea" rows="3" v-model="formData.sql2"></el-input>
+                </el-form-item>
+                <el-form-item label="sql3配置">
+                    <el-input type="textarea" rows="3" v-model="formData.sql3"></el-input>
                 </el-form-item>
                 <el-form-item label="序号">
                     <el-input v-model="formData.orderNumber"></el-input>
@@ -94,6 +110,7 @@
                 total: 0,
                 tableData: [],
                 reportData: [],
+                dataSources: [],
                 currentPage: 1,
                 multipleSelection: [],
                 select_word: "",
@@ -178,6 +195,13 @@
                         this.reportData = res.datas.list ? res.datas.list : res.datas;
                     }
                 });
+                this.$requestData('/dataSource/list', 'get', {}).then(res => {
+                    this.dataSources = [];
+                    if (!res.datas) {return;}
+                    this.dataSources = res.datas; 
+                    console.log(this.dataSources);
+                });
+                
             },
             //编辑当前行数据
             openForm(index, row) {
@@ -189,6 +213,9 @@
                         parentId: row.parentId,
                         config: row.config,
                         sqls: row.sqls,
+                        sql2: row.sql2,
+                        sql3: row.sql3,
+                        dataSource: row.dataSource,
                         orderNumber: row.orderNumber
                     };
                     this.dialogTitle = "编辑";
@@ -242,7 +269,9 @@
                 var param = this.formData;
                 param.config = param.config ? this.format(param.config,true) : '';
                 param.sqls = param.sqls ? param.sqls : '';
-                if(param.config == 'false' || param.sqls == 'false'){return;}
+                param.sql2 = param.sql2 ? param.sql2 : '';
+                param.sql3 = param.sql3 ? param.sql3 : '';
+                if(param.config == 'false'){return;}
                 this.$requestData('/sysReportDetail/save', 'post', param).then(res => {
                     this.dialogVisible = false;
                     this.$message.success(`操作成功!!`);
@@ -251,8 +280,8 @@
             },
             // 删除
             deleteRow(rowId) {
-                this.$message.warning("无删除权限!!");
-                return;
+                // this.$message.warning("无删除权限!!");
+                // return;
                 if (rowId < 2) {
                     this.$message.warning("根目录不可删除!!");
                     return;

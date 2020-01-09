@@ -53,9 +53,9 @@
             loadReport(data) {
                 for (let i = 0, j = data.length; i < j; i++) {
                     if (this.filters.indexOf(data[i].url) > -1) {
-                        this.comps.push({ app: data[i].url, prop: { config: JSON.parse(data[i].config), sqls: data[i].sqls, params: "" } });
+                        this.comps.push({ app: data[i].url, prop: { config: JSON.parse(data[i].config), sqls: data[i].sqls,dataSource:data[i].dataSource, params: "" } });
                     } else {
-                        this.comps2.push({ app: data[i].url, prop: { config: JSON.parse(data[i].config), sqls: data[i].sqls, params: "" } });
+                        this.comps2.push({ app: data[i].url, prop: { config: JSON.parse(data[i].config), sqls: data[i].sqls,sql2: data[i].sql2,sql3: data[i].sql3,dataSource:data[i].dataSource, params: "" } });
                     }
                 }
             },

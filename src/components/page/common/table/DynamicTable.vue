@@ -4,7 +4,7 @@
             <p>{{title}}</p>
         </div>
         <div style="overflow: auto;" v-if="showTable && !nodataFlag">
-            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" border :max-height="maxHeight" style="min-height: 220px;">
+            <el-table :data="tableData" :span-method="objectSpanMethod" :show-summary="showSummary" :summary-method="getSummaries" border :max-height="maxHeight" style="min-height: 220px;">
                 <template v-for="(col, index) in tableColumns">
                     <el-table-column v-if="col.children" :prop="col.prop" :label="col.label">
                         <template v-for="(col2,index2) in col.children">
@@ -55,7 +55,8 @@
                 concatFields: [],
                 tableColumns: [],
                 tableData: [],
-                nodataFlag: false
+                nodataFlag: false,
+                summaries: []
             };
         },
         computed: {
@@ -73,6 +74,7 @@
         },
         created() {
             this.showSummary = this.prop.config.showSummary;
+            this.summaries = this.prop.config.summaries;
             this.sql2 = this.prop.config.sql2;
             this.url = this.prop.config.url;
             if (this.prop.config.widthData) {
@@ -282,6 +284,41 @@
                     }
                 }
                 this.rowspanData['spanArr' + level] = spanArr;
+            },
+            getSummaries(param){
+                let _this = this;
+                const { columns, data } = param;
+                let sums = [];
+                columns.forEach((column, index) => {
+                    if (index === 0) {
+                        sums[index] = '总计';
+                        return;
+                    }
+                    const values = data.map(item => Number(item[column.property]));
+                    if (!values.every(value => isNaN(value))) {
+                        sums[index] = values.reduce((prev, curr) => {
+                            const value = Number(curr);
+                            if (!isNaN(value)) {
+                                return prev + curr;
+                            } else {
+                                return prev;
+                            }
+                        }, 0);
+                        sums[index] = sums[index] == "0.0" ? 0 : sums[index].toFixed(2);
+                    } else {
+                        sums[index] = '';
+                    }
+                });
+                if(this.summaries && this.summaries.length){
+                    this.summaries.forEach( function(item){
+                        if(!sums[item.molecule+_this.level-1] || !sums[item.denominator+_this.level-1]){
+                            sums[item.index+_this.level-1] = "0%";
+                        }else{
+                            sums[item.index+_this.level-1] = ((sums[item.molecule+_this.level-1]/sums[item.denominator+_this.level-1])*100).toFixed(2)+'%';
+                        }
+                    });
+                }
+                return sums;
             }
         }
     };
