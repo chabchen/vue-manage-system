@@ -1,0 +1,21 @@
+spring:
+    profiles:
+        active: test
+    application:
+        name: yili-report
+    http:
+        encoding:
+            force: true
+            charset: utf-8
+            enabled: true
+    yiliTokenUrl: http://10.150.3.2/v1/openidtokeninfo
+
+    refreshDataKey: yiliRefreshData
+
+    importEndDate: 2016-01-01
+
+    initCacheData: true #工程启动是否需要初始化redis数据
+    bgNames: 液态奶事业部,奶粉事业部,酸奶事业部,冷饮事业部,健康饮品事业部,奶酪事业部,新业务,电商
+    bgEnNames: bgLiquidMilk,bgPowderedMilk,bgYogurt,bgColdDrink,bgHealthDrink,bgCheese,newBusin,onlineRetailers
+
+

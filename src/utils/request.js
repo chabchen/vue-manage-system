@@ -5,10 +5,10 @@ window.config = {
     //baseURL: "http://192.168.10.148:8080/report/api",
     //mapUrl: "/json/map/",
     //baseURL:"/report/api",
-    // baseURL:"/gmv/api",
-    // mapUrl: "/gmv/json/map/",
-    baseURL: "/yili2/api",
-    mapUrl: "/yili2/json/map/"
+    baseURL:"/gmv/api",
+    mapUrl: "/gmv/json/map/",
+    // baseURL: "/yili2/api",
+    // mapUrl: "/yili2/json/map/"
 }
 
 const service = axios.create({baseURL: window.config.baseURL,timeout: 50000})

@@ -197,7 +197,7 @@
             //初始化设置时间
             initDate() {
                 let now = new Date();
-                let nowYear = now.getMonth() == 0 ? now.getFullYear() - 1 : now.getFullYear();
+                let nowYear =  now.getFullYear();
                 if (!this.searchData.searchDate) { return; }
                 for (let obj of this.searchData.searchDate) {
                     if (obj.dateType == "date" || obj.dateType == "daterange") {
