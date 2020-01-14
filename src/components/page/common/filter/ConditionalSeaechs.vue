@@ -211,13 +211,14 @@
                     }
                     if (obj.dateType == "month" || obj.dateType == "monthrange") {
                         let nowMonth = now.getMonth() == 0 ? 12 : now.getMonth();
-                        nowYear = now.getMonth() == 0 ? nowYear - 1 : nowYear;
+                        //nowYear = now.getMonth() == 0 ? nowYear - 1 : nowYear;
+                        nowYear = now.getMonth() == 0 ? now.getFullYear() - 1 : now.getFullYear();
                         nowMonth = nowMonth < 10 ? '0' + nowMonth : nowMonth;
                         if (obj.dateType == "month") { obj.value = nowYear + "" + nowMonth; continue; }
                         obj.value = [nowYear + "" + nowMonth, nowYear + "" + nowMonth];
                     }
                     if (obj.dateType == "year") {
-                        obj.value = (nowYear-1).toString();
+                        obj.value = (now.getFullYear()-1).toString();
                     }
                 }
             },
