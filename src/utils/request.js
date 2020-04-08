@@ -3,9 +3,10 @@ import axios from 'axios';
 window.config = {
     // baseURL:"http://10.60.138.84:8081/yili2/api",
     //baseURL: "http://192.168.10.148:8080/report/api",
+    baseURL: "http://localhost:8088/api",
     //mapUrl: "/json/map/",
     //baseURL:"/report/api",
-    baseURL:"/gmv/api",
+    //baseURL:"/gmv/api",
     mapUrl: "/gmv/json/map/",
     // baseURL: "/yili2/api",
     // mapUrl: "/yili2/json/map/"

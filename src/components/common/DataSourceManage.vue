@@ -23,7 +23,7 @@
                 <el-table-column prop="name" label="数据源名称" show-overflow-tooltip sortable></el-table-column>
                 <el-table-column prop="url" show-overflow-tooltip label="路径"></el-table-column>
                 <el-table-column prop="userName" show-overflow-tooltip label="账号"></el-table-column>
-                <el-table-column prop="password" show-overflow-tooltip label="密码"></el-table-column>
+                <!-- <el-table-column prop="password" show-overflow-tooltip label="密码"></el-table-column> -->
                 <el-table-column prop="driverClass" label="驱动类型" show-overflow-tooltip sortable></el-table-column>
                 <el-table-column label="操作" width="200">
                     <template slot-scope="scope">
@@ -53,7 +53,7 @@
                     <el-input v-model="formData.userName"></el-input>
                 </el-form-item>
                 <el-form-item label="密码">
-                    <el-input v-model="formData.password"></el-input>
+                    <el-input v-model="formData.password" show-password></el-input>
                 </el-form-item>
                 <el-form-item label="驱动类型">
                     <el-select v-model="formData.driverClass" filterable placeholder="请选择">
